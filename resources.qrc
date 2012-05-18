@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="Dice.qml">qml/myatzy/Dice.qml</file>
+        <file alias="Dot.qml">qml/myatzy/Dot.qml</file>
+        <file alias="main.qml">qml/myatzy/main.qml</file>
+        <file alias="MainPage.qml">qml/myatzy/MainPage.qml</file>
+        <file alias="ScoreButton.qml">qml/myatzy/ScoreButton.qml</file>
+        <file alias="ScoreLabel.qml">qml/myatzy/ScoreLabel.qml</file>
+    </qresource>
+</RCC>
