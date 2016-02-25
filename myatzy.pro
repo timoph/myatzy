@@ -3,7 +3,19 @@
 #folder_01.target = qml
 #DEPLOYMENTFOLDERS = folder_01
 TARGET = myatzy
-QT += core gui declarative
+
+greaterThan(QT_MAJOR_VERSION, 4) {
+	QT += core quick widgets
+	CONFIG += nemo
+	DEFINES += QT5BUILD
+}
+else {
+	QT += core gui declarative
+}
+
+macx {
+	CONFIG -= app_bundle
+}
 
 # Additional import path used to resolve QML modules in Creator's code model
 QML_IMPORT_PATH =
