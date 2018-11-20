@@ -21,19 +21,12 @@ OTHER_FILES += \
     qml/myatzy/main.qml \
     qml/myatzy/Dot.qml \
     qml/myatzy/Dice.qml \
-    qtc_packaging/debian_harmattan/rules \
-    qtc_packaging/debian_harmattan/README \
-    qtc_packaging/debian_harmattan/manifest.aegis \
-    qtc_packaging/debian_harmattan/copyright \
-    qtc_packaging/debian_harmattan/control \
-    qtc_packaging/debian_harmattan/compat \
-    qtc_packaging/debian_harmattan/changelog \
     qml/myatzy/ScoreLabel.qml \
-    qml/myatzy/MainPage_n900.qml
+    qml/myatzy/MainPage.qml
 
 HEADERS += \
     engine.h
 
 RESOURCES += \
-    resources_n900.qrc
+    resources.qrc
 

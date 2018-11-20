@@ -73,7 +73,7 @@ Page {
         columns: 4
         width: diceGrid.width
         anchors.top: diceGrid.bottom
-        anchors.topMargin: 40
+        anchors.topMargin: 10
 
         ScoreLabel {
             text: "ones"
@@ -240,7 +240,7 @@ Page {
     Row {
         id: totalRow
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 30
+        anchors.bottomMargin: 10
         anchors.horizontalCenter: parent.horizontalCenter
         spacing: 10
 
