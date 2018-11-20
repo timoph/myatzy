@@ -1,8 +1,8 @@
-#include <QApplication>
+#include <QGuiApplication>
 
 #ifdef QT5BUILD
 #include <QQmlContext>
-#include <QQuickView>
+#include <QQmlApplicationEngine>
 #else
 #include <QDeclarativeContext>
 #include <QDeclarativeView>
@@ -10,20 +10,21 @@
 
 #include "engine.h"
 
-Q_DECL_EXPORT int main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-    QCoreApplication::setOrganizationName("timoph");
-    QCoreApplication::setOrganizationDomain("timoph.fi");
-    QCoreApplication::setApplicationName("myatzy");
-    QApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
 #ifdef QT5BUILD
-    QQuickView viewer;
+    QQmlApplicationEngine qml;
 #else
-    QDeclarativeView viewer;
+    QDeclarativeView qml;
 #endif
 	QScopedPointer<Engine> engine(new Engine());
-	viewer.rootContext()->setContextProperty("engine", engine.data());
-    viewer.setSource(QUrl("qrc:///main.qml"));
-//    viewer.showFullScreen();
+    qml.rootContext()->setContextProperty("engine", engine.data());
+#ifdef QT5BUILD
+    qml.load(QUrl("qrc:///main.qml"));
+#else
+    qml.setSource(QUrl("qrc:///main.qml"));
+#endif
+
     return app.exec();
 }

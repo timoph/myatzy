@@ -1,9 +1,11 @@
-import QtQuick 1.1
-import com.nokia.meego 1.0
+import QtQuick 2.7
+import QtQuick.Window 2.0
+import QtQuick.Controls 2.0
 
-Page {
-    tools: commonTools
-    orientationLock: PageOrientation.LockPortrait
+Rectangle {
+    id: mainPage
+    width: 480
+    height: 700
 
     Connections {
         target: engine
@@ -234,6 +236,18 @@ Page {
         ScoreButton {
             hand: "chance"
             value: engine.chance
+        }
+    }
+
+    Button {
+        id: selectButton
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: scoreGrid.bottom
+        anchors.topMargin: 20
+        text: "Roll'em"
+        enabled: engine.gameState === 0 || engine.gameState === 1 || engine.gameState === 2
+        onClicked: {
+            mainPage.roll()
         }
     }
 
