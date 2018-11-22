@@ -1,4 +1,4 @@
-import QtQuick 2.10
+import QtQuick 2.3
 
 Rectangle {
     property bool empty: false
