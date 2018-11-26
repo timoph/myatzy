@@ -7,6 +7,7 @@ Window {
     id: appWindow
     width: 480
     height: 800
+    visible: true
 
     title: "Myatzy"
 
@@ -14,7 +15,6 @@ Window {
         id: mainPage
     }
 
-    visibility: Window.Windowed
 
     RowLayout {
         spacing: 10
