@@ -1,15 +1,9 @@
 TARGET = myatzy
 
-greaterThan(QT_MAJOR_VERSION, 4) {
-	QT += core quick widgets
-	DEFINES += QT5BUILD
-}
-else {
-	QT += core gui declarative
-}
+QT += core quick
 
-macx {
-	CONFIG -= app_bundle
+equals(QT_MAJOR_VERSION, 6) {
+    QT += quickcontrols2
 }
 
 SOURCES += main.cpp \
