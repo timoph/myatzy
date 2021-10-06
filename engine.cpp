@@ -1,11 +1,11 @@
 #include "engine.h"
 #include <QDateTime>
 #include <QSettings>
+#include <QRandomGenerator>
 
 Engine::Engine(QObject *parent) :
     QObject(parent)
 {
-    qsrand(QDateTime::currentMSecsSinceEpoch());
     m_clickable = false;
     m_dice1 = 1;
     m_dice2 = 2;
@@ -67,19 +67,19 @@ void Engine::rollDice(int diceNo)
 {
     switch(diceNo) {
     case 1:
-        setDice1(qrand() % 6 + 1);
+        setDice1(QRandomGenerator::global()->bounded(1, 7));
         break;
     case 2:
-        setDice2(qrand() % 6 + 1);
+        setDice2(QRandomGenerator::global()->bounded(1, 7));
         break;
     case 3:
-        setDice3(qrand() % 6 + 1);
+        setDice3(QRandomGenerator::global()->bounded(1, 7));
         break;
     case 4:
-        setDice4(qrand() % 6 + 1);
+        setDice4(QRandomGenerator::global()->bounded(1, 7));
         break;
     case 5:
-        setDice5(qrand() % 6 + 1);
+        setDice5(QRandomGenerator::global()->bounded(1, 7));
         break;
     default:
         break;
