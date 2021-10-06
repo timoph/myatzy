@@ -1,30 +1,26 @@
 #include <QGuiApplication>
-
-#ifdef QT5BUILD
 #include <QQmlContext>
 #include <QQmlApplicationEngine>
-#else
-#include <QDeclarativeContext>
-#include <QDeclarativeView>
+
+#if QT_VERSION_MAJOR == 6
+#include <QQuickStyle>
 #endif
 
 #include "engine.h"
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication app(argc, argv);
-#ifdef QT5BUILD
-    QQmlApplicationEngine qml;
+#if QT_VERSION_MAJOR == 6
+    QQuickStyle::setStyle("Basic");
 #else
-    QDeclarativeView qml;
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
+
+    QGuiApplication app(argc, argv);
+    QQmlApplicationEngine qml;
 	QScopedPointer<Engine> engine(new Engine());
     qml.rootContext()->setContextProperty("engine", engine.data());
-#ifdef QT5BUILD
-    qml.load(QUrl("qrc:///main.qml"));
-#else
-    qml.setSource(QUrl("qrc:///main.qml"));
-#endif
+    qml.load(QUrl("qrc:/main.qml"));
 
     return app.exec();
 }
