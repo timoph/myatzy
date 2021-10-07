@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine qml;
 	QScopedPointer<Engine> engine(new Engine());
     qml.rootContext()->setContextProperty("engine", engine.data());
-    qml.load(QUrl("qrc:/main.qml"));
+    qml.load(QUrl("qrc:/qml/main.qml"));
 
     return app.exec();
 }

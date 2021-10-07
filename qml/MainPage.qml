@@ -1,6 +1,7 @@
 import QtQuick 2.3
 import QtQuick.Window 2.0
 import QtQuick.Controls 2.0
+import "."
 
 Rectangle {
     id: mainPage
@@ -297,7 +298,7 @@ Rectangle {
 
         Text {
             id: msgText
-            color: "#020202"
+            color: Style.msgTextColor
             anchors.centerIn: parent
             text: ""
             font.pixelSize: 24
