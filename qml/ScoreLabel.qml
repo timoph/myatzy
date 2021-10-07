@@ -1,10 +1,11 @@
 import QtQuick 2.3
+import "."
 
 Rectangle {
     id: rootRect
     height: 62
     width: 200
-    color: "#000000"
+    color: Style.pageBgColor
     property string text: ""
     property bool bold: false
     property bool spacing: false
@@ -12,7 +13,7 @@ Rectangle {
 
     Text {
         text: rootRect.spacing ? "     " + rootRect.text : " " + rootRect.text
-        color: "#dedede"
+        color: Style.pageTextColor
         anchors.verticalCenter: parent.verticalCenter
         font.pixelSize: 24
         font.bold: rootRect.bold
