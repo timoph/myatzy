@@ -1,9 +1,8 @@
-import QtQuick 1.1
-import com.nokia.meego 1.0
+import QtQuick 2.0
+import "."
 
-Page {
-    tools: commonTools
-    orientationLock: PageOrientation.LockPortrait
+Rectangle {
+    anchors.fill: parent
 
     Connections {
         target: engine
@@ -28,9 +27,10 @@ Page {
         engine.forward()
     }
 
-    Label {
+    Text {
         id: topLabel
         text: engine.topLabel
+        color: Style.pageTextColor
         anchors.horizontalCenter: parent.horizontalCenter
     }
 

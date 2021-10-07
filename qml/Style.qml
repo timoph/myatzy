@@ -31,4 +31,11 @@ Item {
     readonly property string dotColor: "#000000"
     readonly property string emptyDotColor: "#00000000"
     readonly property string msgTextColor: "#000000"
+    readonly property string scoreButtonColor: "#111"
+    readonly property string scoreCardColor: "#111"
+    readonly property string scoreCardTextColor: "#ffffff"
+    readonly property string scoreButtonTextColor: "#fff"
+    readonly property string buttonTextColor: "#ffffff"
+    readonly property string buttonColor: "#555555"
+    readonly property string buttonBorderColor: "#000"
 }
