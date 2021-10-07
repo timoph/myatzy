@@ -7,8 +7,8 @@ Item {
     property string selectedColor: selected ? Style.diceSelectedColor : Style.diceDefaultColor
     property bool selectable: engine.gameState === 1 || engine.gameState === 2
     id: diceRoot
-    width: 80
-    height: 80
+    implicitHeight: parent.height
+    implicitWidth: height
     smooth: true
 
     Connections {

@@ -129,35 +129,35 @@ void Engine::handleScoreButtonClick(const QString &hand)
     list[m_dice4]++;
     list[m_dice5]++;
 
-    if(hand == "ones") {
+    if(hand == "Ones") {
         setOnes(countSameFaces(1));
         setUpbonus(0);
     }
-    else if(hand == "twos") {
+    else if(hand == "Twos") {
         setTwos(countSameFaces(2));
         setUpbonus(0);
     }
-    else if(hand == "threes") {
+    else if(hand == "Threes") {
         setThrees(countSameFaces(3));
         setUpbonus(0);
     }
-    else if(hand == "fours") {
+    else if(hand == "Fours") {
         setFours(countSameFaces(4));
         setUpbonus(0);
     }
-    else if(hand == "fives") {
+    else if(hand == "Fives") {
         setFives(countSameFaces(5));
         setUpbonus(0);
     }
-    else if(hand == "sixes") {
+    else if(hand == "Sixes") {
         setSixes(countSameFaces(6));
         setUpbonus(0);
     }
-    else if(hand == "chance") {
+    else if(hand == "Chance") {
         int tmp = m_dice1 + m_dice2 + m_dice3 + m_dice4 + m_dice5;
         setChance(tmp);
     }
-    else if(hand == "yatzy") {
+    else if(hand == "Yatzy") {
         int tmp = 0;
         for(int i = 6; i > 0; i--) {
             if(list.at(i) == 5) {
@@ -167,7 +167,7 @@ void Engine::handleScoreButtonClick(const QString &hand)
         }
         setYatzy(tmp);
     }
-    else if(hand == "pair") {
+    else if(hand == "Pair") {
         int tmp = 0;
         for(int i = 6; i > 0; i--) {
             if(list.at(i) >= 2) {
@@ -177,7 +177,7 @@ void Engine::handleScoreButtonClick(const QString &hand)
         }
         setPair(tmp);
     }
-    else if(hand == "twoPairs") {
+    else if(hand == "Two pairs") {
         int pair1 = 0;
         int pair2 = 0;
 
@@ -200,7 +200,7 @@ void Engine::handleScoreButtonClick(const QString &hand)
             setTwoPairs(0);
         }
     }
-    else if(hand == "threeKind") {
+    else if(hand == "Three of kind") {
         int tmp = 0;
         for(int i = 6; i > 0; i--) {
             if(list.at(i) >= 3) {
@@ -210,7 +210,7 @@ void Engine::handleScoreButtonClick(const QString &hand)
         }
         setThreeKind(tmp);
     }
-    else if(hand == "fourKind") {
+    else if(hand == "Four of kind") {
         int tmp = 0;
         for(int i = 6; i > 0; i--) {
             if(list.at(i) >= 4) {
@@ -220,7 +220,7 @@ void Engine::handleScoreButtonClick(const QString &hand)
         }
         setFourKind(tmp);
     }
-    else if(hand == "fullHouse") {
+    else if(hand == "Full house") {
         int three = 0;
         int two = 0;
 
@@ -241,7 +241,7 @@ void Engine::handleScoreButtonClick(const QString &hand)
             setFullHouse(0);
         }
     }
-    else if(hand == "smallStraight") {
+    else if(hand == "Small straight") {
         bool isIt = true;
         for(int i = 5; i > 0; i--) {
             if(list.at(i) != 1) {
@@ -256,7 +256,7 @@ void Engine::handleScoreButtonClick(const QString &hand)
             setSmallStraight(0);
         }
     }
-    else if(hand == "bigStraight") {
+    else if(hand == "Big straight") {
         bool isIt = true;
         for(int i = 2; i < 7; i++) {
             if(list.at(i) != 1) {
@@ -276,13 +276,13 @@ void Engine::handleScoreButtonClick(const QString &hand)
 
     if(m_turnCount == 16) {
         //game ended
-        setTopLabel("game over");
+        setTopLabel("Game over");
         setGameState(4);
         checkHighScores();
     }
     else {
         setGameState(0);
-        setTopLabel("roll the dice");
+        setTopLabel("Roll the dice");
     }
 }
 
