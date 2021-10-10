@@ -1,5 +1,5 @@
 /*
- Memory cards - a simple pick pair of cards memory game
+ Myatzy - a version of the dice game Yatzy
  Copyright (C) 2021 Timo Härkönen
 
  This program is free software: you can redistribute it and/or modify
