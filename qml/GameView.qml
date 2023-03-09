@@ -62,8 +62,12 @@ Rectangle {
         height: width
         transparentBackground: true
         enabled: engine.gameState === 0 || engine.gameState === 1 || engine.gameState === 2
-        onClicked: {
-            diceRect.roll()
+
+        Connections {
+            target: selectButton
+            function onClicked() {
+                diceRect.roll()
+            }
         }
     }
 }

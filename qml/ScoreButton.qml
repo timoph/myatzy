@@ -64,8 +64,8 @@ Button {
 
     Connections {
         target: engine
-        onNewGameTriggered: {
-            if(hand != "Bonus")
+        function onNewGameTriggered(hand) {
+            if(hand !== "Bonus")
                 button.played = false
         }
     }
