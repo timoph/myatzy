@@ -32,7 +32,7 @@ Item {
     Connections {
         target: engine
 
-        onResetSelections: {
+        function onResetSelections() {
             diceRoot.selected = false
         }
     }

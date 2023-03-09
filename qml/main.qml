@@ -86,7 +86,7 @@ Window {
 
         Connections {
             target: engine
-            onDisplayMessage: {
+            function onDisplayMessage(msg) {
                 popupText.text = msg
                 popupRect.visible = true
             }
