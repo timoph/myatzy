@@ -20,8 +20,8 @@ import QtQuick
 
 Rectangle {
     id: baseRect
-    implicitWidth: 420
-    implicitHeight: 410
+    implicitWidth: 460
+    implicitHeight: sections.implicitHeight + 2 * sections.anchors.margins
     border.width: 2
     border.color: Style.highlightColor
     color: Style.scoreCardColor
@@ -37,7 +37,10 @@ Rectangle {
             required name
             required score
             required played
+            required potential
 
+            width: parent ? parent.width : 0
+            preview: Engine.canScore
             enabled: Engine.canScore && !played
             onClicked: Engine.scoreCategory(scoreRow.category)
         }
@@ -45,39 +48,54 @@ Rectangle {
 
     Row {
         id: sections
-        anchors.top: parent.top
-        anchors.topMargin: 10
-        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.fill: parent
+        anchors.margins: 10
+        spacing: 4
+
+        readonly property real columnWidth: (width - spacing) / 2
 
         Column {
+            width: sections.columnWidth
+
             Repeater {
                 model: Engine.upperSection
                 delegate: scoreDelegate
             }
 
             ScoreButton {
+                width: parent.width
                 name: qsTr("Bonus")
+                detail: Engine.upperBonus > 0 ? "" : qsTr("%1 / 63").arg(Engine.upperSum)
                 score: Engine.upperBonus
                 played: true
                 strikeoutWhenPlayed: false
                 enabled: false
             }
+
+            // keeps the total level with the last row of the lower section
+            Item {
+                width: parent.width
+                height: 40
+            }
+
+            ScoreButton {
+                width: parent.width
+                name: qsTr("Total")
+                score: Engine.total
+                played: true
+                strikeoutWhenPlayed: false
+                enabled: false
+                font.bold: true
+            }
         }
 
         Column {
+            width: sections.columnWidth
+
             Repeater {
                 model: Engine.lowerSection
                 delegate: scoreDelegate
             }
         }
-    }
-
-    Text {
-        text: qsTr("Total: %1").arg(Engine.total)
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 8
-        anchors.horizontalCenter: parent.horizontalCenter
-        color: Style.pageTextColor
-        font.bold: true
     }
 }

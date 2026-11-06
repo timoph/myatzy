@@ -19,40 +19,75 @@
 import QtQuick
 import QtQuick.Controls.Basic
 
+// One row of the score card: hand name on the left, score on the right.
+// Before a hand is played it previews what the current dice would give.
 Button {
     id: button
     property string name: ""
     property int score: 0
     property bool played: false
+    property int potential: 0
+    // show the potential score of an unplayed row
+    property bool preview: false
+    // optional extra text shown before the value, e.g. bonus progress
+    property string detail: ""
     property bool strikeoutWhenPlayed: true
 
-    text: played ? score : enabled ? "\u25cb" : ""
-    font.strikeout: played && strikeoutWhenPlayed
-    font.pointSize: 16
+    readonly property bool showsPreview: !played && preview
+    readonly property string valueText: played ? String(score) : showsPreview ? String(potential) : ""
 
-    contentItem: Row {
-        spacing: 0
+    implicitHeight: 40
+    leftPadding: 12
+    rightPadding: 12
+    font.pointSize: 16
+    hoverEnabled: true
+
+    contentItem: Item {
+        implicitHeight: nameText.implicitHeight
+
         Text {
-            width: 140
+            id: nameText
+            anchors.left: parent.left
+            anchors.right: detailText.left
+            anchors.rightMargin: 6
+            anchors.verticalCenter: parent.verticalCenter
             text: button.name
-            font: button.font
-            color: Style.scoreButtonTextColor
-            verticalAlignment: Text.AlignVCenter
-            clip: true
+            font.pointSize: button.font.pointSize
+            font.bold: button.font.bold
+            font.strikeout: button.played && button.strikeoutWhenPlayed
+            color: button.played && button.strikeoutWhenPlayed ? Style.scorePlayedNameColor
+                                                               : Style.scoreButtonTextColor
+            elide: Text.ElideRight
         }
 
         Text {
-            width: 30
-            text: button.text
-            font.pointSize: 16
-            color: Style.scoreButtonTextColor
-            verticalAlignment: Text.AlignVCenter
+            id: detailText
+            anchors.right: valueText.left
+            anchors.rightMargin: text ? 8 : 0
+            anchors.baseline: nameText.baseline
+            text: button.detail
+            font.pointSize: button.font.pointSize * 0.7
+            color: Style.scorePreviewZeroColor
+        }
+
+        Text {
+            id: valueText
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            width: Math.max(implicitWidth, 30)
+            horizontalAlignment: Text.AlignRight
+            text: button.valueText
+            font.pointSize: button.font.pointSize
+            font.bold: button.font.bold || button.played
+            color: !button.showsPreview ? Style.scoreButtonTextColor
+                 : button.potential > 0 ? Style.scorePreviewColor
+                 : Style.scorePreviewZeroColor
         }
     }
 
     background: Rectangle {
-        implicitWidth: 170
-        implicitHeight: 40
-        color: Style.scoreButtonColor
+        radius: 6
+        color: button.enabled && (button.down || button.hovered) ? Style.scoreRowHoverColor
+                                                                 : Style.scoreButtonColor
     }
 }

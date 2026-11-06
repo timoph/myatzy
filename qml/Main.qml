@@ -42,6 +42,7 @@ Window {
 
         MenuButton {
             id: menuButton
+            objectName: "menuButton"
             anchors.bottom: parent.bottom
             anchors.right: parent.right
             drawBorders: false

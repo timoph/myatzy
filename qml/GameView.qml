@@ -49,7 +49,8 @@ Rectangle {
     }
 
     MenuButton {
-        id: selectButton
+        id: rollButton
+        objectName: "rollButton"
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 5
         anchors.horizontalCenter: parent.horizontalCenter
