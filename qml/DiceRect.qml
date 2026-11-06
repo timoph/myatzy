@@ -16,26 +16,33 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 
 Item {
     id: rootItem
-    implicitHeight: 80
-    implicitWidth: implicitHeight * 5 + 4 * 5
+    readonly property int dieSize: 80
+    readonly property int spacing: 10
+
+    implicitHeight: dieSize
+    implicitWidth: dieSize * 5 + spacing * 4
 
     Row {
         id: diceRow
-        spacing: 5
-        anchors.fill: parent
+        spacing: rootItem.spacing
 
         Repeater {
             model: Engine.dice.length
 
             Dice {
                 required property int index
+                width: rootItem.dieSize
+                height: rootItem.dieSize
                 diceValue: Engine.dice[index]
                 held: Engine.held[index]
                 holdable: Engine.canHold
+                inactive: Engine.rollCount === 0
                 onClicked: Engine.toggleHold(index)
             }
         }

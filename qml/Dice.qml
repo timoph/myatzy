@@ -20,38 +20,85 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 
+// A single die. Pips are laid out relative to the die size. A held die is
+// lifted, outlined in the accent color and tagged.
 Item {
     id: diceRoot
     property int diceValue: 1
     property bool held: false
     property bool holdable: false
-    // visible pips for each face, positions 0..8 of the 3x3 grid row by row
-    readonly property var pips: [[], [4], [1, 7], [2, 4, 6], [0, 2, 6, 8], [0, 2, 4, 6, 8], [0, 2, 3, 5, 6, 8]]
+    // dimmed before the first roll of a turn
+    property bool inactive: false
     signal clicked()
 
-    implicitHeight: parent.height
-    implicitWidth: height
-    smooth: true
+    // visible pips for each face, positions 0..8 of the 3x3 grid row by row
+    readonly property var pips: [[], [4], [1, 7], [2, 4, 6], [0, 2, 6, 8], [0, 2, 4, 6, 8], [0, 2, 3, 5, 6, 8]]
 
-    Rectangle {
-        anchors.fill: parent
-        color: diceRoot.held ? Style.dieHeld : Style.die
-        border.width: 1
-        border.color: Style.dieEdge
-        radius: 15
-        Grid {
-            anchors.centerIn: parent
-            columns: 3
-            rows: 3
-            spacing: 10
+    implicitWidth: 80
+    implicitHeight: 80
+    Accessible.role: Accessible.CheckBox
+    Accessible.name: qsTr("Die showing %1").arg(diceValue)
+    Accessible.checked: held
+
+    Item {
+        id: face
+        width: parent.width
+        height: parent.height
+        y: diceRoot.held ? -8 : 0
+        opacity: diceRoot.inactive ? 0.7 : 1.0
+
+        Behavior on y { NumberAnimation { duration: 120; easing.type: Easing.OutQuad } }
+        Behavior on opacity { NumberAnimation { duration: 200 } }
+
+        // drop shadow, longer when lifted
+        Rectangle {
+            anchors.fill: body
+            anchors.topMargin: diceRoot.held ? 10 : 3
+            anchors.bottomMargin: diceRoot.held ? -10 : -3
+            radius: body.radius
+            color: Style.shadow
+        }
+
+        Rectangle {
+            id: body
+            anchors.fill: parent
+            radius: width * 0.18
+            color: diceRoot.held ? Style.dieHeld : Style.die
+            border.width: diceRoot.held ? 3 : 1
+            border.color: diceRoot.held ? Style.accent : Style.dieEdge
 
             Repeater {
                 model: 9
 
                 Dot {
                     required property int index
+                    readonly property real pipSize: body.width * 0.17
+                    width: pipSize
+                    height: pipSize
+                    x: body.width * (0.25 + 0.25 * (index % 3)) - pipSize / 2
+                    y: body.height * (0.25 + 0.25 * Math.floor(index / 3)) - pipSize / 2
                     empty: !(diceRoot.pips[diceRoot.diceValue] || []).includes(index)
                 }
+            }
+        }
+
+        Rectangle {
+            id: holdTag
+            anchors.horizontalCenter: body.horizontalCenter
+            anchors.verticalCenter: body.bottom
+            width: holdText.implicitWidth + 14
+            height: holdText.implicitHeight + 4
+            radius: height / 2
+            color: Style.accent
+            visible: diceRoot.held
+
+            Text {
+                id: holdText
+                anchors.centerIn: parent
+                text: qsTr("HOLD")
+                font.pointSize: 8
+                font.bold: true
+                color: Style.textOnAccent
             }
         }
     }
@@ -59,6 +106,7 @@ Item {
     MouseArea {
         anchors.fill: parent
         enabled: diceRoot.holdable
+        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
         onClicked: diceRoot.clicked()
     }
 }

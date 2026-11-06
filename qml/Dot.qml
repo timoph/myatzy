@@ -21,8 +21,6 @@ import QtQuick
 Rectangle {
     property bool empty: false
     id: dot
-    width: 10
-    height: 10
     radius: width / 2
     color: empty ? "transparent" : Style.pip
 }
