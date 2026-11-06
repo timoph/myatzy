@@ -27,6 +27,13 @@ Item {
     // true while any die is still tumbling
     readonly property bool rolling: rollingCount > 0
     property int rollingCount: 0
+    // all dice have come to rest after a roll
+    signal settled()
+
+    onRollingCountChanged: {
+        if (rollingCount === 0)
+            settled()
+    }
 
     implicitHeight: dieSize
     implicitWidth: dieSize * 5 + spacing * 4

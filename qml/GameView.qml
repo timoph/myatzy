@@ -134,6 +134,24 @@ Rectangle {
             onClicked: mainPage.rollOrNewGame()
         }
 
+        // five of a kind deserves a party
+        Celebration {
+            id: celebration
+            anchors.fill: parent
+        }
+
+        Connections {
+            target: diceRect
+
+            function onSettled() {
+                const dice = Engine.dice
+                if (dice.every(value => value === dice[0])) {
+                    const center = diceRect.mapToItem(stage, diceRect.width / 2, diceRect.height / 2)
+                    celebration.burst(center.x, center.y)
+                }
+            }
+        }
+
         MenuIconButton {
             id: menuButton
             objectName: "menuButton"

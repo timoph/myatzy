@@ -28,6 +28,7 @@ set(QML_FILES
     qml/ScoreCard.qml
     qml/ScoreButton.qml
     qml/DiceRect.qml
+    qml/Celebration.qml
     qml/Dice.qml
     qml/Dot.qml
     qml/Style.qml
