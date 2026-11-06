@@ -59,6 +59,10 @@ QtObject {
     readonly property int designWidth: 500
     readonly property int designHeight: 650
     property real uiScale: 1.0
+    // Thickness of one physical pixel in design units. A line exactly one
+    // pixel thick always covers one pixel row, wherever the scaling puts it;
+    // a 1 unit line would cover one or two rows depending on its position.
+    readonly property real hairline: 1 / uiScale
 
     readonly property int radiusLarge: 16
     readonly property int radiusSmall: 8

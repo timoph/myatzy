@@ -106,8 +106,7 @@ Item {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.margins: 14
-        width: 1
-        antialiasing: true
+        width: Style.hairline
         color: Style.paperLine
     }
 
