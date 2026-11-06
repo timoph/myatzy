@@ -103,6 +103,8 @@ signals:
     void scoresChanged();
     void highScoresChanged();
     void displayMessage(const QString &msg);
+    // Emitted after a roll; rerolled[i] tells whether die i was thrown.
+    void rolled(const QList<bool> &rerolled);
 
 private:
     void clearHolds();

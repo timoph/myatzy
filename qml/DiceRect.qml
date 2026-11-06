@@ -24,6 +24,9 @@ Item {
     id: rootItem
     readonly property int dieSize: 80
     readonly property int spacing: 10
+    // true while any die is still tumbling
+    readonly property bool rolling: rollingCount > 0
+    property int rollingCount: 0
 
     implicitHeight: dieSize
     implicitWidth: dieSize * 5 + spacing * 4
@@ -33,6 +36,7 @@ Item {
         spacing: rootItem.spacing
 
         Repeater {
+            id: dice
             model: Engine.dice.length
 
             Dice {
@@ -44,6 +48,18 @@ Item {
                 holdable: Engine.canHold
                 inactive: Engine.rollCount === 0
                 onClicked: Engine.toggleHold(index)
+                onRollingChanged: rootItem.rollingCount += rolling ? 1 : -1
+            }
+        }
+    }
+
+    Connections {
+        target: Engine
+
+        function onRolled(rerolled) {
+            for (let i = 0; i < rerolled.length; i++) {
+                if (rerolled[i])
+                    (dice.itemAt(i) as Dice).roll()
             }
         }
     }

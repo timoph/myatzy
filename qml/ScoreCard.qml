@@ -16,10 +16,14 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 
 Item {
     id: baseRect
+    // false while the dice are rolling, so the result is not given away early
+    property bool interactive: true
     implicitWidth: 460
     implicitHeight: sections.implicitHeight + 2 * sections.anchors.margins
 
@@ -61,8 +65,8 @@ Item {
             required potential
 
             width: parent ? parent.width : 0
-            preview: Engine.canScore
-            enabled: Engine.canScore && !played
+            preview: Engine.canScore && baseRect.interactive
+            enabled: Engine.canScore && baseRect.interactive && !played
             onClicked: Engine.scoreCategory(scoreRow.category)
         }
     }

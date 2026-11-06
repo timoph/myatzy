@@ -29,7 +29,17 @@ Item {
     property bool holdable: false
     // dimmed before the first roll of a turn
     property bool inactive: false
+    // the face drawn; differs from diceValue while the roll animation runs
+    property int shownValue: diceValue
+    readonly property bool rolling: rollAnimation.running
     signal clicked()
+
+    // Tumbles the die for a moment before showing diceValue.
+    function roll() {
+        rollAnimation.duration = 450 + Math.floor(Math.random() * 300)
+        rollAnimation.direction = Math.random() < 0.5 ? -1 : 1
+        rollAnimation.restart()
+    }
 
     // visible pips for each face, positions 0..8 of the 3x3 grid row by row
     readonly property var pips: [[], [4], [1, 7], [2, 4, 6], [0, 2, 6, 8], [0, 2, 4, 6, 8], [0, 2, 3, 5, 6, 8]]
@@ -47,6 +57,7 @@ Item {
         y: diceRoot.held ? -8 : 0
         opacity: diceRoot.inactive ? 0.7 : 1.0
 
+        transformOrigin: Item.Center
         Behavior on y { NumberAnimation { duration: 120; easing.type: Easing.OutQuad } }
         Behavior on opacity { NumberAnimation { duration: 200 } }
 
@@ -77,7 +88,7 @@ Item {
                     height: pipSize
                     x: body.width * (0.25 + 0.25 * (index % 3)) - pipSize / 2
                     y: body.height * (0.25 + 0.25 * Math.floor(index / 3)) - pipSize / 2
-                    empty: !(diceRoot.pips[diceRoot.diceValue] || []).includes(index)
+                    empty: !(diceRoot.pips[diceRoot.shownValue] || []).includes(index)
                 }
             }
         }
@@ -101,6 +112,57 @@ Item {
                 color: Style.textOnAccent
             }
         }
+    }
+
+    SequentialAnimation {
+        id: rollAnimation
+        property int duration: 600
+        property int direction: 1
+
+        ScriptAction { script: flicker.start() }
+
+        ParallelAnimation {
+            RotationAnimation {
+                target: face
+                from: 0
+                to: 360 * rollAnimation.direction
+                duration: rollAnimation.duration
+                easing.type: Easing.OutCubic
+            }
+
+            SequentialAnimation {
+                NumberAnimation {
+                    target: face
+                    property: "scale"
+                    to: 0.8
+                    duration: rollAnimation.duration * 0.3
+                    easing.type: Easing.OutQuad
+                }
+                NumberAnimation {
+                    target: face
+                    property: "scale"
+                    to: 1.0
+                    duration: rollAnimation.duration * 0.7
+                    easing.type: Easing.OutBack
+                }
+            }
+        }
+
+        ScriptAction {
+            script: {
+                flicker.stop()
+                face.rotation = 0
+                diceRoot.shownValue = Qt.binding(() => diceRoot.diceValue)
+            }
+        }
+    }
+
+    // random faces while tumbling
+    Timer {
+        id: flicker
+        interval: 70
+        repeat: true
+        onTriggered: diceRoot.shownValue = 1 + Math.floor(Math.random() * 6)
     }
 
     MouseArea {

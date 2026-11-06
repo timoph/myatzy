@@ -49,6 +49,7 @@ private slots:
     void holdKeepsDice();
     void holdNotAllowedBeforeFirstRoll();
     void allHeldCannotRoll();
+    void rolledSignal();
     void scoreAfterFirstRoll();
     void cannotScoreTwiceOrBeforeRolling();
     void cannotScoreInvalidCategory();
@@ -269,6 +270,28 @@ void TestScoring::allHeldCannotRoll()
 
     engine.toggleHold(2);
     QVERIFY(engine.canRoll());
+}
+
+void TestScoring::rolledSignal()
+{
+    Engine engine;
+    QSignalSpy spy(&engine, &Engine::rolled);
+
+    engine.roll();
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).value<QList<bool>>(), QList<bool>(Engine::DiceCount, true));
+
+    engine.toggleHold(1);
+    engine.toggleHold(3);
+    engine.roll();
+    engine.roll(); // last roll clears the holds, the signal still tells what was thrown
+    QCOMPARE(spy.count(), 3);
+    const QList<bool> expected = {true, false, true, false, true};
+    QCOMPARE(spy.at(1).at(0).value<QList<bool>>(), expected);
+    QCOMPARE(spy.at(2).at(0).value<QList<bool>>(), expected);
+
+    engine.roll(); // not allowed any more
+    QCOMPARE(spy.count(), 3);
 }
 
 void TestScoring::scoreAfterFirstRoll()

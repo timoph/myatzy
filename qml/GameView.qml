@@ -36,6 +36,7 @@ Rectangle {
 
         ScoreCard {
             id: scoreCard
+            interactive: !diceRect.rolling
             anchors.horizontalCenter: parent.horizontalCenter
         }
 
@@ -64,7 +65,7 @@ Rectangle {
         anchors.horizontalCenter: parent.horizontalCenter
         rollsLeft: Engine.maxRolls - Engine.rollCount
         maxRolls: Engine.maxRolls
-        enabled: Engine.canRoll
+        enabled: Engine.canRoll && !diceRect.rolling
 
         onClicked: Engine.roll()
     }

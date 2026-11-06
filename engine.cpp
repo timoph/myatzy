@@ -54,7 +54,9 @@ void Engine::roll()
     if(!canRoll())
         return;
 
+    QList<bool> rerolled;
     for(int i = 0; i < DiceCount; i++) {
+        rerolled << !m_held[i];
         if(!m_held[i])
             m_dice[i] = QRandomGenerator::global()->bounded(1, 7);
     }
@@ -66,6 +68,7 @@ void Engine::roll()
 
     emit diceChanged();
     emit turnChanged();
+    emit rolled(rerolled);
 }
 
 void Engine::toggleHold(int index)
