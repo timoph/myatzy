@@ -1,4 +1,3 @@
-*.pro.user
-Makefile
-Makefile.*
-qmake.stash
+build/
+build-*/
+CMakeLists.txt.user
