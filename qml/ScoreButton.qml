@@ -64,8 +64,9 @@ Button {
 
     Connections {
         target: engine
-        function onNewGameTriggered(hand) {
-            if(hand !== "Bonus")
+        function onNewGameTriggered() {
+            // the Bonus row is display-only and always stays "played"
+            if(button.hand !== "Bonus")
                 button.played = false
         }
     }

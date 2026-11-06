@@ -7,10 +7,12 @@ equals(QT_MAJOR_VERSION, 6) {
 }
 
 SOURCES += main.cpp \
-    engine.cpp
+    engine.cpp \
+    scoring.cpp
 
 HEADERS += \
-    engine.h
+    engine.h \
+    scoring.h
 
 RESOURCES += \
     resources.qrc

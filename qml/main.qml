@@ -61,7 +61,7 @@ Window {
         anchors.fill: parent
         color: Style.pageBgColor
         opacity: 0.9
-        visible: popupRect.visible | gameMenu.visible
+        visible: popupRect.visible || gameMenu.visible
     }
 
     GameMenu {

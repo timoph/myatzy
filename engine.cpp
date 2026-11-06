@@ -17,6 +17,7 @@
 */
 
 #include "engine.h"
+#include "scoring.h"
 #include <QDateTime>
 #include <QSettings>
 #include <QRandomGenerator>
@@ -47,7 +48,7 @@ Engine::Engine(QObject *parent) :
     m_chance = 0;
     m_yatsy = 0;
     m_total = 0;
-    m_topLabel = "roll the dice";
+    m_topLabel = tr("Roll the dice (1/3)");
     m_diceSelect = false;
     m_turnCount = 1;
     m_gameState = 0;
@@ -73,9 +74,8 @@ void Engine::newGame()
     setBigStraight(0);
     setChance(0);
     setYatzy(0);
-    setChance(0);
     setTotal(0);
-    setTopLabel("roll the dice (1/3)");
+    setTopLabel(tr("Roll the dice (1/3)"));
     m_turnCount = 1;
     setGameState(0);
     emit newGameTriggered();
@@ -107,23 +107,23 @@ void Engine::rollDice(int diceNo)
 void Engine::skipRoll()
 {
     emit resetSelections();
-    setTopLabel("select hand");
+    setTopLabel(tr("Select hand"));
     setGameState(3);
 }
 
 void Engine::forward()
 {
     if(m_gameState == 0) {
-        setTopLabel("select dices to keep and roll (2/3)");
+        setTopLabel(tr("Select dice to keep and roll (2/3)"));
         setGameState(1);
     }
     else if(m_gameState == 1) {
-        setTopLabel("select dices to keep and roll (3/3)");
+        setTopLabel(tr("Select dice to keep and roll (3/3)"));
         setGameState(2);
     }
     else if(m_gameState == 2) {
         emit resetSelections();
-        setTopLabel("select hand");
+        setTopLabel(tr("Select hand"));
         setGameState(3);
     }
 }
@@ -138,181 +138,49 @@ void Engine::setGameState(const int state)
 
 void Engine::handleScoreButtonClick(const QString &hand)
 {
+    using Scoring::Category;
+
+    const Category category = Scoring::categoryFromName(hand);
+    if(category == Category::Invalid) {
+        // e.g. the Bonus row: not a playable hand, must not consume a turn
+        return;
+    }
+
+    const QList<int> dice = { m_dice1, m_dice2, m_dice3, m_dice4, m_dice5 };
+    const int points = Scoring::score(category, dice);
+
+    switch(category) {
+    case Category::Ones: setOnes(points); break;
+    case Category::Twos: setTwos(points); break;
+    case Category::Threes: setThrees(points); break;
+    case Category::Fours: setFours(points); break;
+    case Category::Fives: setFives(points); break;
+    case Category::Sixes: setSixes(points); break;
+    case Category::Pair: setPair(points); break;
+    case Category::TwoPairs: setTwoPairs(points); break;
+    case Category::ThreeKind: setThreeKind(points); break;
+    case Category::FourKind: setFourKind(points); break;
+    case Category::SmallStraight: setSmallStraight(points); break;
+    case Category::BigStraight: setBigStraight(points); break;
+    case Category::FullHouse: setFullHouse(points); break;
+    case Category::Chance: setChance(points); break;
+    case Category::Yatzy: setYatzy(points); break;
+    case Category::Invalid: break;
+    }
+
     m_turnCount++;
-    QList<int> list;
-    list << 0 << 0 << 0 << 0 << 0 << 0 << 0;
-    list[m_dice1]++;
-    list[m_dice2]++;
-    list[m_dice3]++;
-    list[m_dice4]++;
-    list[m_dice5]++;
-
-    if(hand == "Ones") {
-        setOnes(countSameFaces(1));
-        setUpbonus(0);
-    }
-    else if(hand == "Twos") {
-        setTwos(countSameFaces(2));
-        setUpbonus(0);
-    }
-    else if(hand == "Threes") {
-        setThrees(countSameFaces(3));
-        setUpbonus(0);
-    }
-    else if(hand == "Fours") {
-        setFours(countSameFaces(4));
-        setUpbonus(0);
-    }
-    else if(hand == "Fives") {
-        setFives(countSameFaces(5));
-        setUpbonus(0);
-    }
-    else if(hand == "Sixes") {
-        setSixes(countSameFaces(6));
-        setUpbonus(0);
-    }
-    else if(hand == "Chance") {
-        int tmp = m_dice1 + m_dice2 + m_dice3 + m_dice4 + m_dice5;
-        setChance(tmp);
-    }
-    else if(hand == "Yatzy") {
-        int tmp = 0;
-        for(int i = 6; i > 0; i--) {
-            if(list.at(i) == 5) {
-                tmp = 50;
-                break;
-            }
-        }
-        setYatzy(tmp);
-    }
-    else if(hand == "Pair") {
-        int tmp = 0;
-        for(int i = 6; i > 0; i--) {
-            if(list.at(i) >= 2) {
-                tmp = i * 2;
-                break;
-            }
-        }
-        setPair(tmp);
-    }
-    else if(hand == "Two pairs") {
-        int pair1 = 0;
-        int pair2 = 0;
-
-        for(int i = 6; i > 0; i--) {
-            if(list.at(i) >= 2) {
-                if(pair1 == 0) {
-                    pair1 = i;
-                }
-                else {
-                    pair2 = i;
-                    break;
-                }
-            }
-        }
-
-        if(pair1 > 0 && pair2 > 0) {
-            setTwoPairs(2 * pair1 + 2 * pair2);
-        }
-        else {
-            setTwoPairs(0);
-        }
-    }
-    else if(hand == "Three of kind") {
-        int tmp = 0;
-        for(int i = 6; i > 0; i--) {
-            if(list.at(i) >= 3) {
-                tmp = i * 3;
-                break;
-            }
-        }
-        setThreeKind(tmp);
-    }
-    else if(hand == "Four of kind") {
-        int tmp = 0;
-        for(int i = 6; i > 0; i--) {
-            if(list.at(i) >= 4) {
-                tmp = i * 4;
-                break;
-            }
-        }
-        setFourKind(tmp);
-    }
-    else if(hand == "Full house") {
-        int three = 0;
-        int two = 0;
-
-        for(int i = 6; i > 0; i--) {
-            if(list.at(i) == 3) {
-                if(three == 0) three = i;
-            }
-            if(list.at(i) == 2) {
-                if(two == 0) two = i;
-            }
-            if(two > 0 && three > 0) break;
-        }
-
-        if(two > 0 && three > 0) {
-            setFullHouse(two * 2 + three * 3);
-        }
-        else {
-            setFullHouse(0);
-        }
-    }
-    else if(hand == "Small straight") {
-        bool isIt = true;
-        for(int i = 5; i > 0; i--) {
-            if(list.at(i) != 1) {
-                isIt = false;
-                break;
-            }
-        }
-        if(isIt) {
-            setSmallStraight(15);
-        }
-        else {
-            setSmallStraight(0);
-        }
-    }
-    else if(hand == "Big straight") {
-        bool isIt = true;
-        for(int i = 2; i < 7; i++) {
-            if(list.at(i) != 1) {
-                isIt = false;
-                break;
-            }
-        }
-        if(isIt) {
-            setBigStraight(20);
-        }
-        else {
-            setBigStraight(0);
-        }
-    }
-
+    setUpbonus(0);
     setTotal(0);
 
-    if(m_turnCount == 16) {
-        //game ended
-        setTopLabel("Game over");
+    if(m_turnCount > TotalTurns) {
+        setTopLabel(tr("Game over"));
         setGameState(4);
         checkHighScores();
     }
     else {
         setGameState(0);
-        setTopLabel("Roll the dice");
+        setTopLabel(tr("Roll the dice (1/3)"));
     }
-}
-
-int Engine::countSameFaces(const int face)
-{
-    int tmp = 0;
-    if(m_dice1 == face) tmp += m_dice1;
-    if(m_dice2 == face) tmp += m_dice2;
-    if(m_dice3 == face) tmp += m_dice3;
-    if(m_dice4 == face) tmp += m_dice4;
-    if(m_dice5 == face) tmp += m_dice5;
-    return tmp;
 }
 
 void Engine::setDice1(const int val)
@@ -479,13 +347,9 @@ void Engine::setUpbonus(const int val)
 {
     Q_UNUSED(val)
 
-    int tmp = m_ones + m_twos + m_threes + m_fours + m_fives + m_sixes;
-    if(tmp >= 63) {
-        m_upBonus = 50;
-        emit upbonusChanged(m_upBonus);
-    }
-    else {
-        m_upBonus = 0;
+    const int bonus = Scoring::upperBonus(m_ones + m_twos + m_threes + m_fours + m_fives + m_sixes);
+    if(bonus != m_upBonus) {
+        m_upBonus = bonus;
         emit upbonusChanged(m_upBonus);
     }
 }
@@ -550,18 +414,18 @@ void Engine::checkHighScores()
         highScoreToSettings(2, one);
         highScoreToSettings(3, two);
         setHighScores("");
-        emit displayMessage("New high score");
+        emit displayMessage(tr("New high score"));
     }
     else if(m_total > two) {
         highScoreToSettings(2, m_total);
         highScoreToSettings(3, two);
         setHighScores("");
-        emit displayMessage("New 2nd best score");
+        emit displayMessage(tr("New 2nd best score"));
     }
     else if(m_total > three) {
         highScoreToSettings(3, m_total);
         setHighScores("");
-        emit displayMessage("New 3rd best score");
+        emit displayMessage(tr("New 3rd best score"));
     }
 }
 

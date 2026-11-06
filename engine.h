@@ -55,6 +55,8 @@ class Engine : public QObject
     Q_PROPERTY(QString highScores READ highScores WRITE setHighScores NOTIFY highScoresChanged)
 
 public:
+    static constexpr int TotalTurns = 15;
+
     explicit Engine(QObject *parent = 0);
     Q_INVOKABLE void rollDice(int diceNo);
     Q_INVOKABLE void skipRoll();
@@ -152,7 +154,6 @@ public slots:
     void setHighScores(const QString &txt);
 
 private:
-    int countSameFaces(const int face);
     void highScoreToSettings(int place, int value);
     void checkHighScores();
 
