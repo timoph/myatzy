@@ -19,6 +19,7 @@
 #include <QtTest>
 #include <QSignalSpy>
 #include <QAbstractItemModelTester>
+#include <QTranslator>
 
 #include "scoring.h"
 #include "engine.h"
@@ -40,6 +41,7 @@ private slots:
     void score_data();
     void score();
     void displayName();
+    void finnishTranslation();
     void upperBonus();
     void invalidDice();
 
@@ -169,6 +171,23 @@ void TestScoring::displayName()
     QVERIFY(Scoring::displayName(Category::Invalid).isEmpty());
     for (int i = 0; i < Scoring::CategoryCount; i++)
         QVERIFY(!Scoring::displayName(static_cast<Category>(i)).isEmpty());
+}
+
+void TestScoring::finnishTranslation()
+{
+    if (!QFile::exists(":/i18n/myatzy_fi.qm"))
+        QSKIP("built without translations");
+
+    QTranslator translator;
+    QVERIFY(translator.load(QLocale(QLocale::Finnish, QLocale::Finland), "myatzy", "_", ":/i18n"));
+    QCoreApplication::installTranslator(&translator);
+
+    QCOMPARE(Scoring::displayName(Category::Ones), QString("Ykköset"));
+    QCOMPARE(Scoring::displayName(Category::FullHouse), QString("Täyskäsi"));
+    QCOMPARE(Engine().statusText(), QString("Heitä nopat (1/3)"));
+
+    QCoreApplication::removeTranslator(&translator);
+    QCOMPARE(Scoring::displayName(Category::Ones), QString("Ones"));
 }
 
 // Scores every category in order with the given dice.

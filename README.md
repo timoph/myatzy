@@ -18,13 +18,20 @@ use the keyboard:
 
 ## Building
 
-Requires CMake 3.21+ and Qt 6.5 or newer.
+Requires CMake 3.21+ and Qt 6.5 or newer. The translations need the Qt
+Linguist tools (on Debian and Ubuntu `qt6-tools-dev` and `qt6-l10n-tools`);
+without them the game is built in English only.
 
 ```sh
 cmake -S . -B build
 cmake --build build
 ./build/myatzy
 ```
+
+The game is available in English and Finnish and follows the system
+language. To try another language, e.g. `LANG=fi_FI.UTF-8 ./build/myatzy`.
+After changing user visible texts, refresh the translation files with
+`cmake --build build --target update_translations`.
 
 ## Running the tests
 

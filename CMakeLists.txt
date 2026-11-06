@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Qml Quick)
+find_package(Qt6 6.5 QUIET OPTIONAL_COMPONENTS LinguistTools)
 qt_standard_project_setup(REQUIRES 6.5)
 
 # Lets qmllint and other tooling find the module in the build directory
@@ -52,6 +53,17 @@ qt_add_qml_module(myatzy_core
         scoring.cpp
         scoring.h
 )
+# Translations, compiled into the library under :/i18n.
+# Refresh the .ts files from the sources with the update_translations target.
+if(Qt6LinguistTools_FOUND)
+    qt_add_translations(myatzy_core
+        TS_FILES i18n/myatzy_fi.ts
+        LUPDATE_OPTIONS -locations relative
+    )
+else()
+    message(WARNING "Qt6 LinguistTools not found, building without translations")
+endif()
+
 target_include_directories(myatzy_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(myatzy_core PUBLIC Qt6::Core Qt6::Qml Qt6::Quick)
 

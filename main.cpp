@@ -19,7 +19,9 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlEngineExtensionPlugin>
+#include <QLocale>
 #include <QSettings>
+#include <QTranslator>
 
 // The Myatzy QML module is linked in statically
 Q_IMPORT_QML_PLUGIN(MyatzyPlugin)
@@ -44,6 +46,11 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("myatzy");
     QCoreApplication::setApplicationName("myatzy");
     migrateOldSettings();
+
+    // UI language follows the system locale, e.g. LANG=fi_FI.UTF-8
+    QTranslator translator;
+    if(translator.load(QLocale(), "myatzy", "_", ":/i18n"))
+        QCoreApplication::installTranslator(&translator);
 
     QQmlApplicationEngine qml;
     QObject::connect(&qml, &QQmlApplicationEngine::objectCreationFailed,
