@@ -44,8 +44,8 @@ Rectangle {
         }
 
         Text {
-            id: topLabel
-            text: engine.topLabel
+            id: statusLabel
+            text: engine.statusText
             color: Style.pageTextColor
             anchors.horizontalCenter: parent.horizontalCenter
         }
@@ -61,13 +61,8 @@ Rectangle {
         width: 90
         height: width
         transparentBackground: true
-        enabled: engine.gameState === 0 || engine.gameState === 1 || engine.gameState === 2
+        enabled: engine.canRoll
 
-        Connections {
-            target: selectButton
-            function onClicked() {
-                diceRect.roll()
-            }
-        }
+        onClicked: engine.roll()
     }
 }

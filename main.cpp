@@ -54,9 +54,10 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("myatzy");
     migrateOldSettings();
 
+    // must outlive the QML engine, which still evaluates bindings on shutdown
+    Engine engine;
     QQmlApplicationEngine qml;
-	QScopedPointer<Engine> engine(new Engine());
-    qml.rootContext()->setContextProperty("engine", engine.data());
+    qml.rootContext()->setContextProperty("engine", &engine);
     qml.load(QUrl("qrc:/qml/main.qml"));
 
     return app.exec();

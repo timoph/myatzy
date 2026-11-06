@@ -22,23 +22,20 @@ import "."
 
 Button {
     id: button
-    property int value: 0
-    property string hand: "test hand"
+    property string name: ""
+    property int score: 0
     property bool played: false
-    text: button.played ? value : engine.gameState === 3 ? "\u25cb" : ""
-    enabled: !played && engine.gameState === 3
-    font.strikeout:  played && hand !== "Bonus"
+    property bool strikeoutWhenPlayed: true
+
+    text: played ? score : enabled ? "\u25cb" : ""
+    font.strikeout: played && strikeoutWhenPlayed
     font.pointSize: 16
-    onClicked: {
-        engine.handleScoreButtonClick(hand)
-        played = true
-    }
 
     contentItem: Row {
         spacing: 0
         Text {
             width: 140
-            text: button.hand
+            text: button.name
             font: button.font
             color: Style.scoreButtonTextColor
             verticalAlignment: Text.AlignVCenter
@@ -58,16 +55,5 @@ Button {
         implicitWidth: 170
         implicitHeight: 40
         color: Style.scoreButtonColor
-        border.width: 0 //!played && engine.gameState === 3 ? 2 : 0
-        border.color: Style.scoreButtonTextColor
-    }
-
-    Connections {
-        target: engine
-        function onNewGameTriggered() {
-            // the Bonus row is display-only and always stays "played"
-            if(button.hand !== "Bonus")
-                button.played = false
-        }
     }
 }

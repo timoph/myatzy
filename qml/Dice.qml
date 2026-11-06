@@ -20,27 +20,19 @@ import QtQuick 2.3
 import "."
 
 Item {
-    property int diceValue: 1
-    property bool selected: false
-    property string selectedColor: selected ? Style.diceSelectedColor : Style.diceDefaultColor
-    property bool selectable: engine.gameState === 1 || engine.gameState === 2
     id: diceRoot
+    property int diceValue: 1
+    property bool held: false
+    property bool holdable: false
+    signal clicked()
+
     implicitHeight: parent.height
     implicitWidth: height
     smooth: true
 
-    Connections {
-        target: engine
-
-        function onResetSelections() {
-            diceRoot.selected = false
-        }
-    }
-
     Rectangle {
-        Behavior on visible { NumberAnimation { duration: 200 } }
         anchors.fill: parent
-        color: selectedColor
+        color: diceRoot.held ? Style.diceSelectedColor : Style.diceDefaultColor
         radius: 15
         Grid {
             anchors.centerIn: parent
@@ -66,9 +58,7 @@ Item {
 
     MouseArea {
         anchors.fill: parent
-        enabled: diceRoot.selectable
-        onClicked: {
-            diceRoot.selected = !diceRoot.selected
-        }
+        enabled: diceRoot.holdable
+        onClicked: diceRoot.clicked()
     }
 }

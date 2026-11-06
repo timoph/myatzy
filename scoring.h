@@ -33,11 +33,15 @@ enum class Category {
     Invalid
 };
 
+constexpr int CategoryCount = static_cast<int>(Category::Invalid);
+constexpr int UpperCategoryCount = 6;
 constexpr int UpperBonusThreshold = 63;
 constexpr int UpperBonus = 50;
 
-// Maps the hand names used in the QML score card to categories.
-Category categoryFromName(const QString &name);
+// Translated name of the category shown on the score card.
+QString displayName(Category category);
+
+bool isUpperSection(Category category);
 
 // Score of the given dice (five values 1..6) in the given category.
 int score(Category category, const QList<int> &dice);

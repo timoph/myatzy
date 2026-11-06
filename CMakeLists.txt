@@ -20,6 +20,8 @@ endif()
 add_library(myatzy_core STATIC
     engine.cpp
     engine.h
+    scoremodel.cpp
+    scoremodel.h
     scoring.cpp
     scoring.h
 )

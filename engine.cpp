@@ -17,431 +17,232 @@
 */
 
 #include "engine.h"
-#include "scoring.h"
-#include <QDateTime>
-#include <QSettings>
+#include "scoremodel.h"
+
 #include <QRandomGenerator>
+#include <QSettings>
+
+#include <algorithm>
+
+using Scoring::Category;
 
 Engine::Engine(QObject *parent) :
-    QObject(parent)
+    QObject(parent),
+    m_dice{1, 2, 3, 4, 5},
+    m_held{},
+    m_scores{},
+    m_upperSection(new ScoreModel(this, Category::Ones, Scoring::UpperCategoryCount, this)),
+    m_lowerSection(new ScoreModel(this, Category::Pair,
+                                  Scoring::CategoryCount - Scoring::UpperCategoryCount, this))
 {
-    m_clickable = false;
-    m_dice1 = 1;
-    m_dice2 = 2;
-    m_dice3 = 3;
-    m_dice4 = 4;
-    m_dice5 = 5;
-    m_ones = 0;
-    m_twos = 0;
-    m_threes = 0;
-    m_fours = 0;
-    m_fives = 0;
-    m_sixes = 0;
-    m_upBonus = 0;
-    m_pair = 0;
-    m_twopairs = 0;
-    m_threekind = 0;
-    m_fourkind = 0;
-    m_fullhouse = 0;
-    m_smallstraight = 0;
-    m_bigstraight = 0;
-    m_chance = 0;
-    m_yatsy = 0;
-    m_total = 0;
-    m_topLabel = tr("Roll the dice (1/3)");
-    m_diceSelect = false;
-    m_turnCount = 1;
-    m_gameState = 0;
-    m_secondTry = false;
-    setHighScores("");
+    loadHighScores();
 }
 
 void Engine::newGame()
 {
-    setOnes(0);
-    setTwos(0);
-    setThrees(0);
-    setFours(0);
-    setFives(0);
-    setSixes(0);
-    setUpbonus(0);
-    setPair(0);
-    setTwoPairs(0);
-    setThreeKind(0);
-    setFourKind(0);
-    setFullHouse(0);
-    setSmallStraight(0);
-    setBigStraight(0);
-    setChance(0);
-    setYatzy(0);
-    setTotal(0);
-    setTopLabel(tr("Roll the dice (1/3)"));
-    m_turnCount = 1;
-    setGameState(0);
-    emit newGameTriggered();
+    m_scores.fill(std::nullopt);
+    m_rollCount = 0;
+    clearHolds();
+
+    emit diceChanged();
+    emit scoresChanged();
+    emit turnChanged();
 }
 
-void Engine::rollDice(int diceNo)
+void Engine::roll()
 {
-    switch(diceNo) {
-    case 1:
-        setDice1(QRandomGenerator::global()->bounded(1, 7));
-        break;
-    case 2:
-        setDice2(QRandomGenerator::global()->bounded(1, 7));
-        break;
-    case 3:
-        setDice3(QRandomGenerator::global()->bounded(1, 7));
-        break;
-    case 4:
-        setDice4(QRandomGenerator::global()->bounded(1, 7));
-        break;
-    case 5:
-        setDice5(QRandomGenerator::global()->bounded(1, 7));
-        break;
-    default:
-        break;
-    }
-}
-
-void Engine::skipRoll()
-{
-    emit resetSelections();
-    setTopLabel(tr("Select hand"));
-    setGameState(3);
-}
-
-void Engine::forward()
-{
-    if(m_gameState == 0) {
-        setTopLabel(tr("Select dice to keep and roll (2/3)"));
-        setGameState(1);
-    }
-    else if(m_gameState == 1) {
-        setTopLabel(tr("Select dice to keep and roll (3/3)"));
-        setGameState(2);
-    }
-    else if(m_gameState == 2) {
-        emit resetSelections();
-        setTopLabel(tr("Select hand"));
-        setGameState(3);
-    }
-}
-
-void Engine::setGameState(const int state)
-{
-    if(state != m_gameState) {
-        m_gameState = state;
-        emit gameStateChanged(m_gameState);
-    }
-}
-
-void Engine::handleScoreButtonClick(const QString &hand)
-{
-    using Scoring::Category;
-
-    const Category category = Scoring::categoryFromName(hand);
-    if(category == Category::Invalid) {
-        // e.g. the Bonus row: not a playable hand, must not consume a turn
+    if(!canRoll())
         return;
-    }
 
-    const QList<int> dice = { m_dice1, m_dice2, m_dice3, m_dice4, m_dice5 };
-    const int points = Scoring::score(category, dice);
-
-    switch(category) {
-    case Category::Ones: setOnes(points); break;
-    case Category::Twos: setTwos(points); break;
-    case Category::Threes: setThrees(points); break;
-    case Category::Fours: setFours(points); break;
-    case Category::Fives: setFives(points); break;
-    case Category::Sixes: setSixes(points); break;
-    case Category::Pair: setPair(points); break;
-    case Category::TwoPairs: setTwoPairs(points); break;
-    case Category::ThreeKind: setThreeKind(points); break;
-    case Category::FourKind: setFourKind(points); break;
-    case Category::SmallStraight: setSmallStraight(points); break;
-    case Category::BigStraight: setBigStraight(points); break;
-    case Category::FullHouse: setFullHouse(points); break;
-    case Category::Chance: setChance(points); break;
-    case Category::Yatzy: setYatzy(points); break;
-    case Category::Invalid: break;
+    for(int i = 0; i < DiceCount; i++) {
+        if(!m_held[i])
+            m_dice[i] = QRandomGenerator::global()->bounded(1, 7);
     }
+    m_rollCount++;
 
-    m_turnCount++;
-    setUpbonus(0);
-    setTotal(0);
+    // holding dice after the last roll has no meaning
+    if(m_rollCount == MaxRolls)
+        clearHolds();
 
-    if(m_turnCount > TotalTurns) {
-        setTopLabel(tr("Game over"));
-        setGameState(4);
-        checkHighScores();
-    }
-    else {
-        setGameState(0);
-        setTopLabel(tr("Roll the dice (1/3)"));
-    }
+    emit diceChanged();
+    emit turnChanged();
 }
 
-void Engine::setDice1(const int val)
+void Engine::toggleHold(int index)
 {
-    if(val != m_dice1) {
-        m_dice1 = val;
-        emit dice1Changed(m_dice1);
-    }
+    if(!canHold() || index < 0 || index >= DiceCount)
+        return;
+
+    m_held[index] = !m_held[index];
+    emit diceChanged();
+    emit turnChanged(); // canRoll depends on the holds
 }
 
-void Engine::setDice2(const int val)
+bool Engine::scoreCategory(int category)
 {
-    if(val != m_dice2) {
-        m_dice2 = val;
-        emit dice2Changed(m_dice2);
-    }
+    if(category < 0 || category >= Scoring::CategoryCount || !canScore())
+        return false;
+
+    const Category cat = static_cast<Category>(category);
+    if(isPlayed(cat))
+        return false;
+
+    m_scores[category] = potentialScore(cat);
+    m_rollCount = 0;
+    clearHolds();
+
+    emit diceChanged();
+    emit scoresChanged();
+    emit turnChanged();
+
+    if(gameOver())
+        updateHighScores();
+
+    return true;
 }
 
-void Engine::setDice3(const int val)
+QList<int> Engine::dice() const
 {
-    if(val != m_dice3) {
-        m_dice3 = val;
-        emit dice3Changed(m_dice3);
-    }
+    return QList<int>(m_dice.begin(), m_dice.end());
 }
 
-void Engine::setDice4(const int val)
+QList<bool> Engine::held() const
 {
-    if(val != m_dice4) {
-        m_dice4 = val;
-        emit dice4Changed(m_dice4);
-    }
+    return QList<bool>(m_held.begin(), m_held.end());
 }
 
-void Engine::setDice5(const int val)
+bool Engine::canRoll() const
 {
-    if(val != m_dice5) {
-        m_dice5 = val;
-        emit dice5Changed(m_dice5);
-    }
+    if(gameOver() || m_rollCount >= MaxRolls)
+        return false;
+
+    // rerolling with every die held would just waste a roll
+    const bool allHeld = std::all_of(m_held.begin(), m_held.end(), [](bool h) { return h; });
+    return !allHeld;
 }
 
-void Engine::setOnes(const int val)
+bool Engine::canHold() const
 {
-    if(m_ones != val) {
-        m_ones = val;
-        emit onesChanged(m_ones);
-    }
+    return !gameOver() && m_rollCount > 0 && m_rollCount < MaxRolls;
 }
 
-void Engine::setTwos(const int val)
+bool Engine::canScore() const
 {
-    if(m_twos != val) {
-        m_twos = val;
-        emit twosChanged(m_twos);
-    }
+    return !gameOver() && m_rollCount > 0;
 }
 
-void Engine::setThrees(const int val)
+bool Engine::gameOver() const
 {
-    if(m_threes != val) {
-        m_threes = val;
-        emit threesChanged(m_threes);
-    }
+    return std::all_of(m_scores.begin(), m_scores.end(),
+                       [](const std::optional<int> &s) { return s.has_value(); });
 }
 
-void Engine::setFours(const int val)
+QString Engine::statusText() const
 {
-    if(m_fours != val) {
-        m_fours = val;
-        emit foursChanged(m_fours);
-    }
+    if(gameOver())
+        return tr("Game over");
+    if(m_rollCount == 0)
+        return tr("Roll the dice (1/%1)").arg(MaxRolls);
+    if(m_rollCount < MaxRolls)
+        return tr("Select dice to keep and roll (%1/%2) or select hand")
+                .arg(m_rollCount + 1).arg(MaxRolls);
+    return tr("Select hand");
 }
 
-void Engine::setFives(const int val)
+int Engine::upperSum() const
 {
-    if(m_fives != val) {
-        m_fives = val;
-        emit fivesChanged(m_fives);
-    }
+    int sum = 0;
+    for(int i = 0; i < Scoring::UpperCategoryCount; i++)
+        sum += m_scores[i].value_or(0);
+    return sum;
 }
 
-void Engine::setSixes(const int val)
+int Engine::upperBonus() const
 {
-    if(m_sixes != val) {
-        m_sixes = val;
-        emit sixesChanged(m_sixes);
-    }
+    return Scoring::upperBonus(upperSum());
 }
 
-void Engine::setPair(const int val)
+int Engine::total() const
 {
-    if(m_pair != val) {
-        m_pair = val;
-        emit pairChanged(m_pair);
-    }
+    int sum = upperBonus();
+    for(const auto &s : m_scores)
+        sum += s.value_or(0);
+    return sum;
 }
 
-void Engine::setTwoPairs(const int val)
+QAbstractItemModel *Engine::upperSection() const
 {
-    if(m_twopairs != val) {
-        m_twopairs = val;
-        emit twoPairsChanged(m_twopairs);
-    }
+    return m_upperSection;
 }
 
-void Engine::setThreeKind(const int val)
+QAbstractItemModel *Engine::lowerSection() const
 {
-    if(m_threekind != val) {
-        m_threekind = val;
-        emit threeKindChanged(m_threekind);
-    }
+    return m_lowerSection;
 }
 
-void Engine::setFourKind(const int val)
+bool Engine::isPlayed(Category category) const
 {
-    if(m_fourkind != val) {
-        m_fourkind = val;
-        emit fourKindChanged(m_fourkind);
-    }
+    const int i = static_cast<int>(category);
+    return i >= 0 && i < Scoring::CategoryCount && m_scores[i].has_value();
 }
 
-void Engine::setSmallStraight(const int val)
+int Engine::scoreOf(Category category) const
 {
-    if(m_smallstraight != val) {
-        m_smallstraight = val;
-        emit smallStraightChanged(m_smallstraight);
-    }
+    const int i = static_cast<int>(category);
+    if(i < 0 || i >= Scoring::CategoryCount)
+        return 0;
+    return m_scores[i].value_or(0);
 }
 
-void Engine::setBigStraight(const int val)
+int Engine::potentialScore(Category category) const
 {
-    if(m_bigstraight != val) {
-        m_bigstraight = val;
-        emit bigStraightChanged(m_bigstraight);
-    }
+    return Scoring::score(category, dice());
 }
 
-void Engine::setFullHouse(const int val)
+void Engine::setDice(const QList<int> &values)
 {
-    if(m_fullhouse != val) {
-        m_fullhouse = val;
-        emit fullHouseChanged(m_fullhouse);
-    }
+    for(int i = 0; i < DiceCount && i < values.size(); i++)
+        m_dice[i] = values.at(i);
+    emit diceChanged();
 }
 
-void Engine::setChance(const int val)
+void Engine::clearHolds()
 {
-    if(m_chance != val) {
-        m_chance = val;
-        emit chanceChanged(m_chance);
-    }
+    m_held.fill(false);
 }
 
-void Engine::setYatzy(const int val)
-{
-    if(m_yatsy != val) {
-        m_yatsy = val;
-        emit yatzyChanged(m_yatsy);
-    }
-}
-
-void Engine::setUpbonus(const int val)
-{
-    Q_UNUSED(val)
-
-    const int bonus = Scoring::upperBonus(m_ones + m_twos + m_threes + m_fours + m_fives + m_sixes);
-    if(bonus != m_upBonus) {
-        m_upBonus = bonus;
-        emit upbonusChanged(m_upBonus);
-    }
-}
-
-void Engine::setTotal(const int val)
-{
-    Q_UNUSED(val)
-    int tmp = m_ones + m_twos + m_threes + m_fours + m_fives + m_sixes +
-            m_pair + m_twopairs + m_threekind + m_fourkind + m_smallstraight +
-            m_bigstraight + m_fullhouse + m_chance + m_yatsy + m_upBonus;
-
-    if(tmp != m_total) {
-        m_total = tmp;
-        emit totalChanged(m_total);
-    }
-}
-
-void Engine::setClickable(bool val)
-{
-    if(val != m_clickable) {
-        m_clickable = val;
-        emit clickableChanged(m_clickable);
-    }
-}
-
-void Engine::setTopLabel(const QString &txt)
-{
-    if(m_topLabel != txt) {
-        m_topLabel = txt;
-        emit topLabelChanged(m_topLabel);
-    }
-}
-
-void Engine::setDiceSelect(bool areThey)
-{
-    if(m_diceSelect != areThey) {
-        m_diceSelect = areThey;
-        emit diceSelectChanged(m_diceSelect);
-    }
-}
-
-int Engine::highScoreFromSettings(int place)
+void Engine::loadHighScores()
 {
     QSettings settings;
-    return settings.value(QString("high/%1").arg(place), 0).toInt();
+    m_highScores.clear();
+    for(int place = 1; place <= HighScoreCount; place++)
+        m_highScores << settings.value(QString("high/%1").arg(place), 0).toInt();
 }
 
-void Engine::highScoreToSettings(int place, int value)
+void Engine::updateHighScores()
 {
+    const int score = total();
+
+    // ties do not push an older score down the list
+    int place = 0;
+    while(place < m_highScores.size() && score <= m_highScores.at(place))
+        place++;
+    if(place >= HighScoreCount)
+        return;
+
+    m_highScores.insert(place, score);
+    while(m_highScores.size() > HighScoreCount)
+        m_highScores.removeLast();
+
     QSettings settings;
-    settings.setValue(QString("high/%1").arg(place), value);
-}
+    for(int i = 0; i < HighScoreCount; i++)
+        settings.setValue(QString("high/%1").arg(i + 1), m_highScores.at(i));
 
-void Engine::checkHighScores()
-{
-    int one = highScoreFromSettings(1);
-    int two = highScoreFromSettings(2);
-    int three = highScoreFromSettings(3);
+    emit highScoresChanged();
 
-    if(m_total > one) {
-        highScoreToSettings(1, m_total);
-        highScoreToSettings(2, one);
-        highScoreToSettings(3, two);
-        setHighScores("");
-        emit displayMessage(tr("New high score"));
-    }
-    else if(m_total > two) {
-        highScoreToSettings(2, m_total);
-        highScoreToSettings(3, two);
-        setHighScores("");
-        emit displayMessage(tr("New 2nd best score"));
-    }
-    else if(m_total > three) {
-        highScoreToSettings(3, m_total);
-        setHighScores("");
-        emit displayMessage(tr("New 3rd best score"));
-    }
-}
-
-void Engine::setHighScores(const QString &txt)
-{
-    Q_UNUSED(txt)
-    int one = highScoreFromSettings(1);
-    int two = highScoreFromSettings(2);
-    int three = highScoreFromSettings(3);
-
-    QString scores = QString("1.\t%1\n2.\t%2\n3.\t%3").arg(one)
-            .arg(two)
-            .arg(three);
-
-    if(scores != m_highScores) {
-        m_highScores = scores;
-        emit highScoresChanged(m_highScores);
+    switch(place) {
+    case 0: emit displayMessage(tr("New high score")); break;
+    case 1: emit displayMessage(tr("New 2nd best score")); break;
+    default: emit displayMessage(tr("New 3rd best score")); break;
     }
 }

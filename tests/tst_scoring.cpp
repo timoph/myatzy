@@ -18,9 +18,11 @@
 
 #include <QtTest>
 #include <QSignalSpy>
+#include <QAbstractItemModelTester>
 
 #include "scoring.h"
 #include "engine.h"
+#include "scoremodel.h"
 
 using Scoring::Category;
 
@@ -32,26 +34,34 @@ class TestScoring : public QObject
 
 private slots:
     void initTestCase();
+    void init();
 
+    // Scoring
     void score_data();
     void score();
-    void categoryFromName();
+    void displayName();
     void upperBonus();
     void invalidDice();
 
-    void engineBonusRowDoesNotConsumeTurn();
-    void engineGameEndsAfterFifteenHands();
-    void engineNewGameResetsScores();
+    // Engine
+    void initialState();
+    void rollsPerTurn();
+    void holdKeepsDice();
+    void holdNotAllowedBeforeFirstRoll();
+    void allHeldCannotRoll();
+    void scoreAfterFirstRoll();
+    void cannotScoreTwiceOrBeforeRolling();
+    void cannotScoreInvalidCategory();
+    void upperBonusAndTotal();
+    void fullGame();
+    void newGameResets();
+    void highScoreOrder();
+
+    // ScoreModel
+    void scoreModel();
 
 private:
-    static void setDice(Engine &engine, const QList<int> &dice);
-    static const QStringList allHands;
-};
-
-const QStringList TestScoring::allHands = {
-    "Ones", "Twos", "Threes", "Fours", "Fives", "Sixes",
-    "Pair", "Two pairs", "Three of kind", "Four of kind",
-    "Small straight", "Big straight", "Full house", "Chance", "Yatzy"
+    static void playAll(Engine &engine, const QList<int> &dice);
 };
 
 void TestScoring::initTestCase()
@@ -60,6 +70,10 @@ void TestScoring::initTestCase()
     QStandardPaths::setTestModeEnabled(true);
     QCoreApplication::setOrganizationName("myatzy-tests");
     QCoreApplication::setApplicationName("tst_scoring");
+}
+
+void TestScoring::init()
+{
     QSettings().clear();
 }
 
@@ -131,15 +145,6 @@ void TestScoring::score()
     QCOMPARE(Scoring::score(category, dice), expected);
 }
 
-void TestScoring::categoryFromName()
-{
-    for (int i = 0; i < allHands.size(); i++)
-        QCOMPARE(Scoring::categoryFromName(allHands.at(i)), static_cast<Category>(i));
-
-    QCOMPARE(Scoring::categoryFromName("Bonus"), Category::Invalid);
-    QCOMPARE(Scoring::categoryFromName(""), Category::Invalid);
-}
-
 void TestScoring::upperBonus()
 {
     QCOMPARE(Scoring::upperBonus(0), 0);
@@ -154,71 +159,277 @@ void TestScoring::invalidDice()
     QCOMPARE(Scoring::score(Category::Chance, {}), 0);
 }
 
-void TestScoring::setDice(Engine &engine, const QList<int> &dice)
+void TestScoring::displayName()
 {
-    engine.setDice1(dice.at(0));
-    engine.setDice2(dice.at(1));
-    engine.setDice3(dice.at(2));
-    engine.setDice4(dice.at(3));
-    engine.setDice5(dice.at(4));
+    QCOMPARE(Scoring::displayName(Category::Ones), QString("Ones"));
+    QCOMPARE(Scoring::displayName(Category::TwoPairs), QString("Two pairs"));
+    QCOMPARE(Scoring::displayName(Category::Yatzy), QString("Yatzy"));
+    QVERIFY(Scoring::displayName(Category::Invalid).isEmpty());
+    for (int i = 0; i < Scoring::CategoryCount; i++)
+        QVERIFY(!Scoring::displayName(static_cast<Category>(i)).isEmpty());
 }
 
-void TestScoring::engineBonusRowDoesNotConsumeTurn()
+// Scores every category in order with the given dice.
+void TestScoring::playAll(Engine &engine, const QList<int> &dice)
 {
-    Engine engine;
-    engine.newGame();
-    setDice(engine, {6, 6, 6, 6, 6});
-
-    // The Bonus row used to become clickable after a new game and
-    // ended the game one hand too early. It must be ignored.
-    engine.handleScoreButtonClick("Bonus");
-    QCOMPARE(engine.total(), 0);
-
-    for (int i = 0; i < allHands.size() - 1; i++) {
-        engine.handleScoreButtonClick(allHands.at(i));
-        QVERIFY2(engine.gameState() != 4, qPrintable(QString("game ended after %1 hands").arg(i + 1)));
+    for (int c = 0; c < Scoring::CategoryCount; c++) {
+        engine.roll();
+        engine.setDice(dice);
+        QVERIFY(engine.scoreCategory(c));
     }
-    engine.handleScoreButtonClick(allHands.last());
-    QCOMPARE(engine.gameState(), 4);
 }
 
-void TestScoring::engineGameEndsAfterFifteenHands()
+void TestScoring::initialState()
 {
     Engine engine;
+    QCOMPARE(engine.dice().size(), Engine::DiceCount);
+    QCOMPARE(engine.held(), QList<bool>(Engine::DiceCount, false));
+    QCOMPARE(engine.rollCount(), 0);
+    QVERIFY(engine.canRoll());
+    QVERIFY(!engine.canHold());
+    QVERIFY(!engine.canScore());
+    QVERIFY(!engine.gameOver());
+    QCOMPARE(engine.total(), 0);
+    QCOMPARE(engine.highScores(), QList<int>({0, 0, 0}));
+}
+
+void TestScoring::rollsPerTurn()
+{
+    Engine engine;
+    QSignalSpy diceSpy(&engine, &Engine::diceChanged);
+
+    for (int i = 1; i <= Engine::MaxRolls; i++) {
+        QVERIFY(engine.canRoll());
+        engine.roll();
+        QCOMPARE(engine.rollCount(), i);
+        for (int d : engine.dice())
+            QVERIFY(d >= 1 && d <= 6);
+    }
+    QCOMPARE(diceSpy.count(), Engine::MaxRolls);
+
+    QVERIFY(!engine.canRoll());
+    QVERIFY(!engine.canHold());
+    QVERIFY(engine.canScore());
+    engine.roll(); // ignored
+    QCOMPARE(engine.rollCount(), Engine::MaxRolls);
+}
+
+void TestScoring::holdKeepsDice()
+{
+    Engine engine;
+    engine.roll();
+    engine.setDice({1, 2, 3, 4, 5});
+    engine.toggleHold(0);
+    engine.toggleHold(4);
+    QCOMPARE(engine.held(), QList<bool>({true, false, false, false, true}));
+
+    // held dice never change, however many times we roll
+    for (int i = 0; i < 50; i++) {
+        Engine e;
+        e.roll();
+        e.setDice({1, 2, 3, 4, 5});
+        e.toggleHold(0);
+        e.toggleHold(4);
+        e.roll();
+        QCOMPARE(e.dice().first(), 1);
+        QCOMPARE(e.dice().last(), 5);
+    }
+
+    engine.toggleHold(0);
+    QCOMPARE(engine.held().first(), false);
+
+    // holds are cleared after the last roll and after scoring
+    engine.roll();
+    QCOMPARE(engine.held(), QList<bool>({false, false, false, false, true}));
+    engine.roll();
+    QCOMPARE(engine.held(), QList<bool>(Engine::DiceCount, false));
+}
+
+void TestScoring::holdNotAllowedBeforeFirstRoll()
+{
+    Engine engine;
+    engine.toggleHold(0);
+    QCOMPARE(engine.held().first(), false);
+
+    engine.roll();
+    engine.toggleHold(-1);
+    engine.toggleHold(Engine::DiceCount);
+    QCOMPARE(engine.held(), QList<bool>(Engine::DiceCount, false));
+}
+
+void TestScoring::allHeldCannotRoll()
+{
+    Engine engine;
+    engine.roll();
+    for (int i = 0; i < Engine::DiceCount; i++)
+        engine.toggleHold(i);
+    QVERIFY(!engine.canRoll());
+    engine.roll();
+    QCOMPARE(engine.rollCount(), 1);
+
+    engine.toggleHold(2);
+    QVERIFY(engine.canRoll());
+}
+
+void TestScoring::scoreAfterFirstRoll()
+{
+    Engine engine;
+    QSignalSpy scoresSpy(&engine, &Engine::scoresChanged);
+    engine.roll();
+    engine.setDice({6, 6, 6, 2, 2});
+    engine.toggleHold(0);
+
+    QCOMPARE(engine.potentialScore(Category::FullHouse), 22);
+    QVERIFY(engine.scoreCategory(int(Category::FullHouse)));
+    QCOMPARE(scoresSpy.count(), 1);
+    QVERIFY(engine.isPlayed(Category::FullHouse));
+    QCOMPARE(engine.scoreOf(Category::FullHouse), 22);
+    QCOMPARE(engine.total(), 22);
+
+    // a new turn begins
+    QCOMPARE(engine.rollCount(), 0);
+    QCOMPARE(engine.held(), QList<bool>(Engine::DiceCount, false));
+    QVERIFY(!engine.canScore());
+    QVERIFY(engine.canRoll());
+}
+
+void TestScoring::cannotScoreTwiceOrBeforeRolling()
+{
+    Engine engine;
+    QVERIFY(!engine.scoreCategory(int(Category::Chance)));
+
+    engine.roll();
+    QVERIFY(engine.scoreCategory(int(Category::Chance)));
+    engine.roll();
+    QVERIFY(!engine.scoreCategory(int(Category::Chance)));
+    QCOMPARE(engine.rollCount(), 1); // the turn goes on
+}
+
+void TestScoring::cannotScoreInvalidCategory()
+{
+    Engine engine;
+    engine.roll();
+    QVERIFY(!engine.scoreCategory(-1));
+    QVERIFY(!engine.scoreCategory(Scoring::CategoryCount));
+    QCOMPARE(engine.rollCount(), 1);
+}
+
+void TestScoring::upperBonusAndTotal()
+{
+    Engine engine;
+    // three of each face: 3+6+9+12+15+18 = 63 -> bonus
+    for (int face = 1; face <= 6; face++) {
+        engine.roll();
+        engine.setDice({face, face, face, 1 + face % 6, 1 + (face + 1) % 6});
+        QVERIFY(engine.scoreCategory(face - 1));
+        QCOMPARE(engine.upperBonus(), face == 6 ? 50 : 0);
+    }
+    QCOMPARE(engine.upperSum(), 63);
+    QCOMPARE(engine.total(), 63 + 50);
+}
+
+void TestScoring::fullGame()
+{
+    Engine engine;
+    QSignalSpy messages(&engine, &Engine::displayMessage);
+    QSignalSpy highScores(&engine, &Engine::highScoresChanged);
+
+    playAll(engine, {6, 6, 6, 6, 6});
+
+    QVERIFY(engine.gameOver());
+    QVERIFY(!engine.canRoll());
+    QVERIFY(!engine.canScore());
+    QCOMPARE(engine.statusText(), QString("Game over"));
+    // 30 sixes + 12 pair + 18 three + 24 four + 30 chance + 50 yatzy
+    const int expected = 30 + 12 + 18 + 24 + 30 + 50;
+    QCOMPARE(engine.total(), expected);
+    QCOMPARE(engine.upperBonus(), 0);
+    QCOMPARE(messages.count(), 1);
+    QCOMPARE(highScores.count(), 1);
+    QCOMPARE(engine.highScores(), QList<int>({expected, 0, 0}));
+
+    // persisted in the old settings format
+    QCOMPARE(QSettings().value("high/1").toInt(), expected);
+    QCOMPARE(Engine().highScores(), QList<int>({expected, 0, 0}));
+}
+
+void TestScoring::newGameResets()
+{
+    Engine engine;
+    playAll(engine, {6, 6, 6, 6, 6});
+    QVERIFY(engine.gameOver());
+
     engine.newGame();
+    QVERIFY(!engine.gameOver());
+    QCOMPARE(engine.total(), 0);
+    QCOMPARE(engine.upperBonus(), 0);
+    QCOMPARE(engine.rollCount(), 0);
+    for (int c = 0; c < Scoring::CategoryCount; c++)
+        QVERIFY(!engine.isPlayed(static_cast<Category>(c)));
+    QVERIFY(engine.canRoll());
+}
+
+void TestScoring::highScoreOrder()
+{
+    Engine engine;
     QSignalSpy messages(&engine, &Engine::displayMessage);
 
-    // all sixes: sixes 30, upper sum 30 -> no bonus
-    setDice(engine, {6, 6, 6, 6, 6});
-    for (const QString &hand : allHands)
-        engine.handleScoreButtonClick(hand);
+    const auto game = [&](int face) {
+        engine.newGame();
+        playAll(engine, {face, face, face, face, face});
+        return engine.total();
+    };
 
-    QCOMPARE(engine.gameState(), 4);
-    // 30 sixes + 12 pair + 18 three + 24 four + 30 chance + 50 yatzy
-    QCOMPARE(engine.total(), 30 + 12 + 18 + 24 + 30 + 50);
-    QCOMPARE(engine.upbonus(), 0);
-    QCOMPARE(messages.count(), 1);
-    QCOMPARE(engine.highScoreFromSettings(1), engine.total());
+    const int threes = game(3);
+    const int sixes = game(6);
+    const int ones = game(1);
+    QCOMPARE(engine.highScores(), QList<int>({sixes, threes, ones}));
+
+    // a tie with the 3rd best score does not enter the list
+    game(1);
+    QCOMPARE(engine.highScores(), QList<int>({sixes, threes, ones}));
+
+    QCOMPARE(messages.count(), 3);
+    QCOMPARE(messages.at(0).at(0).toString(), QString("New high score"));
+    QCOMPARE(messages.at(1).at(0).toString(), QString("New high score"));
+    QCOMPARE(messages.at(2).at(0).toString(), QString("New 3rd best score"));
 }
 
-void TestScoring::engineNewGameResetsScores()
+void TestScoring::scoreModel()
 {
     Engine engine;
-    engine.newGame();
+    QAbstractItemModel *upper = engine.upperSection();
+    QAbstractItemModel *lower = engine.lowerSection();
+    QAbstractItemModelTester upperTester(upper, QAbstractItemModelTester::FailureReportingMode::QtTest);
+    QAbstractItemModelTester lowerTester(lower, QAbstractItemModelTester::FailureReportingMode::QtTest);
 
-    // upper section worth 3 of each: 3+6+9+12+15+18 = 63 -> bonus
-    for (int face = 1; face <= 6; face++) {
-        setDice(engine, {face, face, face, 1 + face % 6, 1 + (face + 1) % 6});
-        engine.handleScoreButtonClick(allHands.at(face - 1));
-    }
-    QCOMPARE(engine.upbonus(), 50);
-    QCOMPARE(engine.total(), 63 + 50);
+    QCOMPARE(upper->rowCount(), 6);
+    QCOMPARE(lower->rowCount(), Scoring::CategoryCount - 6);
 
-    engine.newGame();
-    QCOMPARE(engine.total(), 0);
-    QCOMPARE(engine.upbonus(), 0);
-    QCOMPARE(engine.sixes(), 0);
-    QCOMPARE(engine.gameState(), 0);
+    const QModelIndex ones = upper->index(0, 0);
+    const QModelIndex yatzy = lower->index(lower->rowCount() - 1, 0);
+    QCOMPARE(ones.data(ScoreModel::NameRole).toString(), QString("Ones"));
+    QCOMPARE(ones.data(ScoreModel::CategoryRole).toInt(), int(Category::Ones));
+    QCOMPARE(lower->index(0, 0).data(ScoreModel::CategoryRole).toInt(), int(Category::Pair));
+    QCOMPARE(yatzy.data(ScoreModel::CategoryRole).toInt(), int(Category::Yatzy));
+
+    const QHash<int, QByteArray> roles = upper->roleNames();
+    QCOMPARE(roles.value(ScoreModel::NameRole), QByteArray("name"));
+    QCOMPARE(roles.value(ScoreModel::PotentialRole), QByteArray("potential"));
+
+    QSignalSpy upperChanged(upper, &QAbstractItemModel::dataChanged);
+    engine.roll();
+    engine.setDice({1, 1, 1, 1, 1});
+    QVERIFY(upperChanged.count() >= 1);
+
+    QCOMPARE(ones.data(ScoreModel::PotentialRole).toInt(), 5);
+    QCOMPARE(yatzy.data(ScoreModel::PotentialRole).toInt(), 50);
+    QCOMPARE(ones.data(ScoreModel::PlayedRole).toBool(), false);
+
+    QVERIFY(engine.scoreCategory(int(Category::Ones)));
+    QCOMPARE(ones.data(ScoreModel::PlayedRole).toBool(), true);
+    QCOMPARE(ones.data(ScoreModel::ScoreRole).toInt(), 5);
+    QCOMPARE(yatzy.data(ScoreModel::ScoreRole).toInt(), 0);
 }
 
 QTEST_GUILESS_MAIN(TestScoring)

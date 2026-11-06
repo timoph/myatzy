@@ -18,6 +18,8 @@
 
 #include "scoring.h"
 
+#include <QCoreApplication>
+
 #include <array>
 
 namespace Scoring {
@@ -56,30 +58,35 @@ bool isStraight(const std::array<int, 7> &counts, int first)
 
 } // namespace
 
-Category categoryFromName(const QString &name)
+QString displayName(Category category)
 {
-    static const QList<QPair<QString, Category>> names = {
-        {"Ones", Category::Ones},
-        {"Twos", Category::Twos},
-        {"Threes", Category::Threes},
-        {"Fours", Category::Fours},
-        {"Fives", Category::Fives},
-        {"Sixes", Category::Sixes},
-        {"Pair", Category::Pair},
-        {"Two pairs", Category::TwoPairs},
-        {"Three of kind", Category::ThreeKind},
-        {"Four of kind", Category::FourKind},
-        {"Small straight", Category::SmallStraight},
-        {"Big straight", Category::BigStraight},
-        {"Full house", Category::FullHouse},
-        {"Chance", Category::Chance},
-        {"Yatzy", Category::Yatzy},
+    static const char *const names[CategoryCount] = {
+        QT_TRANSLATE_NOOP("Scoring", "Ones"),
+        QT_TRANSLATE_NOOP("Scoring", "Twos"),
+        QT_TRANSLATE_NOOP("Scoring", "Threes"),
+        QT_TRANSLATE_NOOP("Scoring", "Fours"),
+        QT_TRANSLATE_NOOP("Scoring", "Fives"),
+        QT_TRANSLATE_NOOP("Scoring", "Sixes"),
+        QT_TRANSLATE_NOOP("Scoring", "Pair"),
+        QT_TRANSLATE_NOOP("Scoring", "Two pairs"),
+        QT_TRANSLATE_NOOP("Scoring", "Three of kind"),
+        QT_TRANSLATE_NOOP("Scoring", "Four of kind"),
+        QT_TRANSLATE_NOOP("Scoring", "Small straight"),
+        QT_TRANSLATE_NOOP("Scoring", "Big straight"),
+        QT_TRANSLATE_NOOP("Scoring", "Full house"),
+        QT_TRANSLATE_NOOP("Scoring", "Chance"),
+        QT_TRANSLATE_NOOP("Scoring", "Yatzy"),
     };
-    for (const auto &entry : names) {
-        if (entry.first == name)
-            return entry.second;
-    }
-    return Category::Invalid;
+    const int i = static_cast<int>(category);
+    if (i < 0 || i >= CategoryCount)
+        return QString();
+    return QCoreApplication::translate("Scoring", names[i]);
+}
+
+bool isUpperSection(Category category)
+{
+    return static_cast<int>(category) >= 0
+        && static_cast<int>(category) < UpperCategoryCount;
 }
 
 int score(Category category, const QList<int> &dice)

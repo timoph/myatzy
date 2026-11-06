@@ -16,111 +16,64 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import QtQuick 2.0
+import QtQuick 2.3
 import "."
 
 Rectangle {
     id: baseRect
     implicitWidth: 420
-    implicitHeight: 360
+    implicitHeight: 410
     border.width: 2
     border.color: Style.highlightColor
     color: Style.scoreCardColor
     radius: 15
 
-    Grid {
-        id: scoreGrid
-        anchors.centerIn: parent
-        columns: 2
-        clip: true
+    Component {
+        id: scoreDelegate
 
         ScoreButton {
-            hand: "Ones"
-            value: engine.ones
+            name: model.name
+            score: model.score
+            played: model.played
+            enabled: engine.canScore && !model.played
+            onClicked: engine.scoreCategory(model.category)
+        }
+    }
+
+    Row {
+        id: sections
+        anchors.top: parent.top
+        anchors.topMargin: 10
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        Column {
+            Repeater {
+                model: engine.upperSection
+                delegate: scoreDelegate
+            }
+
+            ScoreButton {
+                name: qsTr("Bonus")
+                score: engine.upperBonus
+                played: true
+                strikeoutWhenPlayed: false
+                enabled: false
+            }
         }
 
-        ScoreButton {
-            hand: "Two pairs"
-            value: engine.twoPairs
-        }
-
-        ScoreButton {
-            hand: "Twos"
-            value: engine.twos
-        }
-
-        ScoreButton {
-            hand: "Three of kind"
-            value: engine.threeKind
-        }
-
-        ScoreButton {
-            hand: "Threes"
-            value: engine.threes
-        }
-
-        ScoreButton {
-            hand: "Four of kind"
-            value: engine.fourKind
-        }
-
-        ScoreButton {
-            hand: "Fours"
-            value: engine.fours
-        }
-
-        ScoreButton {
-            hand: "Small straight"
-            value: engine.smallStraight
-        }
-
-        ScoreButton {
-            hand: "Fives"
-            value: engine.fives
-        }
-
-        ScoreButton {
-            hand: "Big straight"
-            value: engine.bigStraight
-        }
-
-        ScoreButton {
-            hand: "Sixes"
-            value: engine.sixes
-        }
-
-        ScoreButton {
-            hand: "Full house"
-            value: engine.fullHouse
-        }
-
-        ScoreButton {
-            hand: "Bonus"
-            played: true
-            text: engine.upbonus
-        }
-
-        ScoreButton {
-            hand: "Yatzy"
-            value: engine.yatzy
-        }
-
-        ScoreButton {
-            hand: "Pair"
-            value: engine.pair
-        }
-
-        ScoreButton {
-            hand: "Chance"
-            value: engine.chance
+        Column {
+            Repeater {
+                model: engine.lowerSection
+                delegate: scoreDelegate
+            }
         }
     }
 
     Text {
-        text: "Total: " + engine.total
+        text: qsTr("Total: %1").arg(engine.total)
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 5
-        anchors.horizontalCenter: scoreGrid.horizontalCenter
+        anchors.bottomMargin: 8
+        anchors.horizontalCenter: parent.horizontalCenter
         color: Style.pageTextColor
         font.bold: true
     }
