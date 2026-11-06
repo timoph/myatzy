@@ -21,6 +21,55 @@ import QtQuick
 Rectangle {
     id: mainPage
     anchors.fill: parent
+    focus: true
+
+    signal menuRequested()
+
+    function rollOrNewGame() {
+        if (!rollButton.enabled)
+            return
+        if (Engine.gameOver)
+            Engine.newGame()
+        else
+            Engine.roll()
+    }
+
+    Keys.onPressed: (event) => {
+        switch (event.key) {
+        case Qt.Key_Space:
+            mainPage.rollOrNewGame()
+            break
+        case Qt.Key_1:
+        case Qt.Key_2:
+        case Qt.Key_3:
+        case Qt.Key_4:
+        case Qt.Key_5:
+            if (!diceRect.rolling)
+                Engine.toggleHold(event.key - Qt.Key_1)
+            break
+        case Qt.Key_Up:
+            scoreCard.moveVertical(-1)
+            break
+        case Qt.Key_Down:
+            scoreCard.moveVertical(1)
+            break
+        case Qt.Key_Left:
+        case Qt.Key_Right:
+            scoreCard.switchSection()
+            break
+        case Qt.Key_Return:
+        case Qt.Key_Enter:
+            scoreCard.scoreCursor()
+            break
+        case Qt.Key_M:
+        case Qt.Key_F1:
+            mainPage.menuRequested()
+            break
+        default:
+            return
+        }
+        event.accepted = true
+    }
 
     gradient: Gradient {
         GradientStop { position: 0.0; color: Style.feltTop }
@@ -69,6 +118,6 @@ Rectangle {
         maxRolls: Engine.gameOver ? 0 : Engine.maxRolls
         enabled: Engine.gameOver || (Engine.canRoll && !diceRect.rolling)
 
-        onClicked: Engine.gameOver ? Engine.newGame() : Engine.roll()
+        onClicked: mainPage.rollOrNewGame()
     }
 }

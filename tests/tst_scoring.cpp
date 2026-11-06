@@ -339,11 +339,15 @@ void TestScoring::gameInProgress()
 void TestScoring::cannotScoreTwiceOrBeforeRolling()
 {
     Engine engine;
+    QVERIFY(!engine.canScoreCategory(int(Category::Chance)));
     QVERIFY(!engine.scoreCategory(int(Category::Chance)));
 
     engine.roll();
+    QVERIFY(engine.canScoreCategory(int(Category::Chance)));
     QVERIFY(engine.scoreCategory(int(Category::Chance)));
     engine.roll();
+    QVERIFY(!engine.canScoreCategory(int(Category::Chance)));
+    QVERIFY(engine.canScoreCategory(int(Category::Yatzy)));
     QVERIFY(!engine.scoreCategory(int(Category::Chance)));
     QCOMPARE(engine.rollCount(), 1); // the turn goes on
 }
@@ -354,6 +358,8 @@ void TestScoring::cannotScoreInvalidCategory()
     engine.roll();
     QVERIFY(!engine.scoreCategory(-1));
     QVERIFY(!engine.scoreCategory(Scoring::CategoryCount));
+    QVERIFY(!engine.canScoreCategory(-1));
+    QVERIFY(!engine.canScoreCategory(Scoring::CategoryCount));
     QCOMPARE(engine.rollCount(), 1);
 }
 

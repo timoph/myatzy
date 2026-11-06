@@ -40,6 +40,7 @@ Window {
         id: mainPage
         width: appWindow.width
         height: appWindow.height
+        onMenuRequested: gameMenu.open()
 
         MenuIconButton {
             id: menuButton
@@ -51,11 +52,14 @@ Window {
         }
     }
 
+    // give the keyboard back to the game when a dialog closes
     GameMenu {
         id: gameMenu
+        onClosed: mainPage.forceActiveFocus()
     }
 
     GameOverDialog {
         id: gameOverDialog
+        onClosed: mainPage.forceActiveFocus()
     }
 }

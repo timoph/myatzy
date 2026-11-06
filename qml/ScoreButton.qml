@@ -32,6 +32,8 @@ Button {
     // optional extra text shown before the value, e.g. bonus progress
     property string detail: ""
     property bool strikeoutWhenPlayed: true
+    // highlighted by the keyboard cursor
+    property bool keyboardFocus: false
 
     readonly property bool showsPreview: !played && preview
     readonly property string valueText: played ? String(score) : showsPreview ? String(potential) : ""
@@ -41,6 +43,7 @@ Button {
     rightPadding: 12
     font.pointSize: 16
     hoverEnabled: true
+    focusPolicy: Qt.NoFocus
 
     contentItem: Item {
         implicitHeight: nameText.implicitHeight
@@ -89,7 +92,10 @@ Button {
 
     background: Rectangle {
         radius: 6
-        color: button.enabled && (button.down || button.hovered) ? Style.paperHover : "transparent"
+        color: button.enabled && (button.down || button.hovered || button.keyboardFocus)
+               ? Style.paperHover : "transparent"
+        border.width: button.keyboardFocus ? 2 : 0
+        border.color: Style.accent
 
         Rectangle {
             visible: button.ruled

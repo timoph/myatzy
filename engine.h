@@ -73,6 +73,8 @@ public:
     // Scores the current dice in the given Scoring::Category.
     // Returns false if that is not allowed right now.
     Q_INVOKABLE bool scoreCategory(int category);
+    // Whether scoreCategory(category) would be accepted right now.
+    Q_INVOKABLE bool canScoreCategory(int category) const;
 
     QList<int> dice() const;
     QList<bool> held() const;

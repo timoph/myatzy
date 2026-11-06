@@ -29,6 +29,7 @@ Button {
 
     implicitWidth: Math.max(200, implicitContentWidth + 64)
     implicitHeight: 64
+    focusPolicy: Qt.NoFocus
     text: qsTr("Roll")
     font.pointSize: 20
     font.bold: true

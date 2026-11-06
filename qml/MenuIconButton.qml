@@ -25,6 +25,7 @@ Button {
     id: button
     implicitWidth: 48
     implicitHeight: 48
+    focusPolicy: Qt.NoFocus
     Accessible.name: qsTr("Menu")
 
     contentItem: Item {

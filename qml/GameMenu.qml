@@ -50,6 +50,16 @@ PaperDialog {
     }
 
     Text {
+        width: parent.width
+        wrapMode: Text.WordWrap
+        color: Style.inkMuted
+        font.pointSize: 9
+        textFormat: Text.StyledText
+        text: qsTr("<b>Keyboard:</b> Space rolls, 1-5 hold dice, arrow keys choose a hand and " +
+                   "Enter scores it, M opens this menu.")
+    }
+
+    Text {
         text: qsTr("High scores")
         color: Style.ink
         font.pointSize: 14

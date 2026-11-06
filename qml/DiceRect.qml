@@ -45,7 +45,7 @@ Item {
                 height: rootItem.dieSize
                 diceValue: Engine.dice[index]
                 held: Engine.held[index]
-                holdable: Engine.canHold
+                holdable: Engine.canHold && !rootItem.rolling
                 inactive: Engine.rollCount === 0
                 onClicked: Engine.toggleHold(index)
                 onRollingChanged: rootItem.rollingCount += rolling ? 1 : -1

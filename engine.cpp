@@ -86,14 +86,18 @@ void Engine::toggleHold(int index)
     emit turnChanged(); // canRoll depends on the holds
 }
 
+bool Engine::canScoreCategory(int category) const
+{
+    return category >= 0 && category < Scoring::CategoryCount && canScore()
+        && !isPlayed(static_cast<Category>(category));
+}
+
 bool Engine::scoreCategory(int category)
 {
-    if(category < 0 || category >= Scoring::CategoryCount || !canScore())
+    if(!canScoreCategory(category))
         return false;
 
     const Category cat = static_cast<Category>(category);
-    if(isPlayed(cat))
-        return false;
 
     m_scores[category] = potentialScore(cat);
     m_rollCount = 0;
