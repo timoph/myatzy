@@ -16,9 +16,8 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import QtQuick 2.0
-import QtQuick.Controls 2.4
-import "."
+import QtQuick
+import QtQuick.Controls.Basic
 
 Item {
     id: base

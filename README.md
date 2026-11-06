@@ -4,7 +4,7 @@ A Yatzy game originally written for Nokia N9.
 
 ## Building
 
-Requires CMake 3.16+ and Qt 6 (Qt 5.15 should also work).
+Requires CMake 3.21+ and Qt 6.5 or newer.
 
 ```sh
 cmake -S . -B build

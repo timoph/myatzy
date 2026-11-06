@@ -16,9 +16,7 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import QtQuick 2.0
-import QtQuick.Controls 2.4
-import "."
+import QtQuick
 
 Item {
     id: rootItem
@@ -69,7 +67,7 @@ Item {
                 id: ngButton
                 text: "new game"
                 onClicked: {
-                    engine.newGame()
+                    Engine.newGame()
                     rootItem.visible = false
                 }
             }
@@ -77,7 +75,7 @@ Item {
 //            Button {
 //                id: hsButton
 //                text: "Highscores"
-//                onClicked: messageRect.showMessage(qsTr("Top 3 scores"), engine.highScores)
+//                onClicked: messageRect.showMessage(qsTr("Top 3 scores"), Engine.highScores)
 //            }
         }
     }

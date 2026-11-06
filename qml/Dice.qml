@@ -16,14 +16,17 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import QtQuick 2.3
-import "."
+pragma ComponentBehavior: Bound
+
+import QtQuick
 
 Item {
     id: diceRoot
     property int diceValue: 1
     property bool held: false
     property bool holdable: false
+    // visible pips for each face, positions 0..8 of the 3x3 grid row by row
+    readonly property var pips: [[], [4], [1, 7], [2, 4, 6], [0, 2, 6, 8], [0, 2, 4, 6, 8], [0, 2, 3, 5, 6, 8]]
     signal clicked()
 
     implicitHeight: parent.height
@@ -39,20 +42,15 @@ Item {
             columns: 3
             rows: 3
             spacing: 10
-            //top row
-            Dot { empty: (diceValue !== 4 && diceValue !== 5 && diceValue !== 6) ? true : false }
-            Dot { empty: (diceValue !== 2) ? true : false }
-            Dot { empty: (diceValue !== 3 && diceValue !== 4 && diceValue !== 5 && diceValue !== 6) ? true : false }
 
-            // middle row
-            Dot { empty: (diceValue !== 6) ? true : false }
-            Dot { empty: (diceValue !== 1 && diceValue !== 3 && diceValue !== 5) ? true : false }
-            Dot { empty: (diceValue !== 6) ? true : false }
+            Repeater {
+                model: 9
 
-            // bottom row
-            Dot { empty: (diceValue !== 3 && diceValue !== 4 && diceValue !== 5 && diceValue !== 6) ? true : false }
-            Dot { empty: (diceValue !== 2) ? true : false }
-            Dot { empty: (diceValue !== 4 && diceValue !== 5 && diceValue !== 6) ? true : false }
+                Dot {
+                    required property int index
+                    empty: !(diceRoot.pips[diceRoot.diceValue] || []).includes(index)
+                }
+            }
         }
     }
 

@@ -17,15 +17,12 @@
 */
 
 #include <QGuiApplication>
-#include <QQmlContext>
 #include <QQmlApplicationEngine>
+#include <QQmlEngineExtensionPlugin>
 #include <QSettings>
 
-#if QT_VERSION_MAJOR == 6
-#include <QQuickStyle>
-#endif
-
-#include "engine.h"
+// The Myatzy QML module is linked in statically
+Q_IMPORT_QML_PLUGIN(MyatzyPlugin)
 
 // Earlier versions did not set an organization name, so QSettings stored the
 // high scores under "Unknown Organization". Copy them over once.
@@ -43,22 +40,16 @@ static void migrateOldSettings()
 
 int main(int argc, char *argv[])
 {
-#if QT_VERSION_MAJOR == 6
-    QQuickStyle::setStyle("Basic");
-#else
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
-
     QGuiApplication app(argc, argv);
     QCoreApplication::setOrganizationName("myatzy");
     QCoreApplication::setApplicationName("myatzy");
     migrateOldSettings();
 
-    // must outlive the QML engine, which still evaluates bindings on shutdown
-    Engine engine;
     QQmlApplicationEngine qml;
-    qml.rootContext()->setContextProperty("engine", &engine);
-    qml.load(QUrl("qrc:/qml/main.qml"));
+    QObject::connect(&qml, &QQmlApplicationEngine::objectCreationFailed,
+                     &app, [] { QCoreApplication::exit(EXIT_FAILURE); },
+                     Qt::QueuedConnection);
+    qml.loadFromModule("Myatzy", "Main");
 
     return app.exec();
 }

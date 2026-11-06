@@ -16,10 +16,7 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import QtQuick 2.3
-import QtQuick.Window 2.0
-import QtQuick.Controls 2.0
-import "."
+import QtQuick
 
 Rectangle {
     id: mainPage
@@ -45,7 +42,7 @@ Rectangle {
 
         Text {
             id: statusLabel
-            text: engine.statusText
+            text: Engine.statusText
             color: Style.pageTextColor
             anchors.horizontalCenter: parent.horizontalCenter
         }
@@ -61,8 +58,8 @@ Rectangle {
         width: 90
         height: width
         transparentBackground: true
-        enabled: engine.canRoll
+        enabled: Engine.canRoll
 
-        onClicked: engine.roll()
+        onClicked: Engine.roll()
     }
 }

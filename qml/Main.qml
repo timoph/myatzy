@@ -16,8 +16,7 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import QtQuick 2.3
-import QtQuick.Window 2.2
+import QtQuick
 
 Window {
     id: appWindow
@@ -85,7 +84,7 @@ Window {
         }
 
         Connections {
-            target: engine
+            target: Engine
             function onDisplayMessage(msg) {
                 popupText.text = msg
                 popupRect.visible = true

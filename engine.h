@@ -23,6 +23,7 @@
 #include <QList>
 #include <QObject>
 #include <QString>
+#include <QtQml/qqmlregistration.h>
 
 #include <array>
 #include <optional>
@@ -39,6 +40,8 @@ class ScoreModel;
 class Engine : public QObject
 {
     Q_OBJECT
+    QML_ELEMENT
+    QML_SINGLETON
     Q_PROPERTY(QList<int> dice READ dice NOTIFY diceChanged)
     Q_PROPERTY(QList<bool> held READ held NOTIFY diceChanged)
     Q_PROPERTY(int rollCount READ rollCount NOTIFY turnChanged)

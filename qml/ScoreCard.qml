@@ -16,8 +16,7 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import QtQuick 2.3
-import "."
+import QtQuick
 
 Rectangle {
     id: baseRect
@@ -32,11 +31,15 @@ Rectangle {
         id: scoreDelegate
 
         ScoreButton {
-            name: model.name
-            score: model.score
-            played: model.played
-            enabled: engine.canScore && !model.played
-            onClicked: engine.scoreCategory(model.category)
+            id: scoreRow
+            // filled from the model roles of the same names
+            required property int category
+            required name
+            required score
+            required played
+
+            enabled: Engine.canScore && !played
+            onClicked: Engine.scoreCategory(scoreRow.category)
         }
     }
 
@@ -48,13 +51,13 @@ Rectangle {
 
         Column {
             Repeater {
-                model: engine.upperSection
+                model: Engine.upperSection
                 delegate: scoreDelegate
             }
 
             ScoreButton {
                 name: qsTr("Bonus")
-                score: engine.upperBonus
+                score: Engine.upperBonus
                 played: true
                 strikeoutWhenPlayed: false
                 enabled: false
@@ -63,14 +66,14 @@ Rectangle {
 
         Column {
             Repeater {
-                model: engine.lowerSection
+                model: Engine.lowerSection
                 delegate: scoreDelegate
             }
         }
     }
 
     Text {
-        text: qsTr("Total: %1").arg(engine.total)
+        text: qsTr("Total: %1").arg(Engine.total)
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 8
         anchors.horizontalCenter: parent.horizontalCenter

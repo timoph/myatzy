@@ -16,7 +16,7 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import QtQuick 2.3
+import QtQuick
 
 Item {
     id: rootItem
@@ -29,13 +29,14 @@ Item {
         anchors.fill: parent
 
         Repeater {
-            model: engine.dice.length
+            model: Engine.dice.length
 
             Dice {
-                diceValue: engine.dice[index]
-                held: engine.held[index]
-                holdable: engine.canHold
-                onClicked: engine.toggleHold(index)
+                required property int index
+                diceValue: Engine.dice[index]
+                held: Engine.held[index]
+                holdable: Engine.canHold
+                onClicked: Engine.toggleHold(index)
             }
         }
     }

@@ -16,8 +16,7 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import QtQuick 2.3
-import "."
+import QtQuick
 
 Rectangle {
     property bool empty: false

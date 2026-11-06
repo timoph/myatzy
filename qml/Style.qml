@@ -16,12 +16,11 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-import QtQuick 2.0
-import "."
 pragma Singleton
 
-Item {
+import QtQuick
+
+QtObject {
     readonly property string menuBgColor: "#000000"
     readonly property string pageBgColor: "#000000"
     readonly property string pageTextColor: "#ffffff"
