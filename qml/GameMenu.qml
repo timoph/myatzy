@@ -56,7 +56,7 @@ PaperDialog {
         font.pointSize: 9
         textFormat: Text.StyledText
         text: qsTr("<b>Keyboard:</b> Space rolls, 1-5 hold dice, arrow keys choose a hand and " +
-                   "Enter scores it, M opens this menu.")
+                   "Enter scores it, M opens this menu and F11 toggles full screen.")
     }
 
     Text {

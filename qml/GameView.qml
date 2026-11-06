@@ -24,6 +24,7 @@ Rectangle {
     focus: true
 
     signal menuRequested()
+    signal fullScreenToggleRequested()
 
     function rollOrNewGame() {
         if (!rollButton.enabled)
@@ -65,6 +66,9 @@ Rectangle {
         case Qt.Key_F1:
             mainPage.menuRequested()
             break
+        case Qt.Key_F11:
+            mainPage.fullScreenToggleRequested()
+            break
         default:
             return
         }
@@ -76,48 +80,67 @@ Rectangle {
         GradientStop { position: 1.0; color: Style.feltBottom }
     }
 
-    Column {
-        id: contentColumn
-        width: parent.width
-        anchors.top: parent.top
-        anchors.topMargin: 20
-        spacing: 16
+    // The game is laid out at a fixed design size and scaled to fit the
+    // window, keeping its proportions. The felt fills the rest.
+    Item {
+        id: stage
+        width: Style.designWidth
+        height: Style.designHeight
+        anchors.centerIn: parent
+        scale: Style.uiScale
 
-        ScoreCard {
-            id: scoreCard
-            interactive: !diceRect.rolling
-            anchors.horizontalCenter: parent.horizontalCenter
+        Column {
+            id: contentColumn
+            width: parent.width
+            anchors.top: parent.top
+            anchors.topMargin: 20
+            spacing: 16
+
+            ScoreCard {
+                id: scoreCard
+                interactive: !diceRect.rolling
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
+
+            DiceRect {
+                id: diceRect
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
+
+            Text {
+                id: statusLabel
+                width: parent.width - 40
+                anchors.horizontalCenter: parent.horizontalCenter
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                text: Engine.statusText
+                color: Style.textOnFelt
+                font.pointSize: 11
+            }
         }
 
-        DiceRect {
-            id: diceRect
+        RollButton {
+            id: rollButton
+            objectName: "rollButton"
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 20
             anchors.horizontalCenter: parent.horizontalCenter
+            // after the game the same button starts a new one
+            text: Engine.gameOver ? qsTr("New game") : qsTr("Roll")
+            rollsLeft: Engine.maxRolls - Engine.rollCount
+            maxRolls: Engine.gameOver ? 0 : Engine.maxRolls
+            enabled: Engine.gameOver || (Engine.canRoll && !diceRect.rolling)
+
+            onClicked: mainPage.rollOrNewGame()
         }
 
-        Text {
-            id: statusLabel
-            width: parent.width - 40
-            anchors.horizontalCenter: parent.horizontalCenter
-            horizontalAlignment: Text.AlignHCenter
-            wrapMode: Text.WordWrap
-            text: Engine.statusText
-            color: Style.textOnFelt
-            font.pointSize: 11
+        MenuIconButton {
+            id: menuButton
+            objectName: "menuButton"
+            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+            anchors.margins: 16
+            onClicked: mainPage.menuRequested()
         }
-    }
-
-    RollButton {
-        id: rollButton
-        objectName: "rollButton"
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 20
-        anchors.horizontalCenter: parent.horizontalCenter
-        // after the game the same button starts a new one
-        text: Engine.gameOver ? qsTr("New game") : qsTr("Roll")
-        rollsLeft: Engine.maxRolls - Engine.rollCount
-        maxRolls: Engine.gameOver ? 0 : Engine.maxRolls
-        enabled: Engine.gameOver || (Engine.canRoll && !diceRect.rolling)
-
-        onClicked: mainPage.rollOrNewGame()
     }
 }

@@ -54,6 +54,12 @@ QtObject {
     // dialogs
     readonly property color dim: "#99000000"
 
+    // size the game is laid out in, and the factor it is scaled with to fit
+    // the window (set by the main window)
+    readonly property int designWidth: 500
+    readonly property int designHeight: 650
+    property real uiScale: 1.0
+
     readonly property int radiusLarge: 16
     readonly property int radiusSmall: 8
 }

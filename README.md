@@ -14,6 +14,7 @@ use the keyboard:
 | Arrow keys | Choose a hand on the score card |
 | Enter | Score the chosen hand |
 | M, F1 | Menu |
+| F11 | Toggle full screen |
 
 ## Building
 

@@ -16,16 +16,17 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import QtCore
 import QtQuick
 
 Window {
     id: appWindow
     color: Style.feltBottom
     flags: Qt.Window
-    minimumHeight: 650
-    minimumWidth: 500
-    maximumHeight: minimumHeight
-    maximumWidth: minimumWidth
+    width: Style.designWidth
+    height: Style.designHeight
+    minimumWidth: Style.designWidth * 0.64
+    minimumHeight: Style.designHeight * 0.64
     visible: true
 
     title: "Myatzy"
@@ -36,19 +37,26 @@ Window {
             gameOverDialog.open()
     }
 
+    Binding {
+        target: Style
+        property: "uiScale"
+        value: Math.min(appWindow.width / Style.designWidth, appWindow.height / Style.designHeight)
+    }
+
+    // remember the window size between runs
+    Settings {
+        category: "window"
+        property alias width: appWindow.width
+        property alias height: appWindow.height
+    }
+
     GameView {
         id: mainPage
-        width: appWindow.width
-        height: appWindow.height
+        anchors.fill: parent
         onMenuRequested: gameMenu.open()
-
-        MenuIconButton {
-            id: menuButton
-            objectName: "menuButton"
-            anchors.bottom: parent.bottom
-            anchors.right: parent.right
-            anchors.margins: 16
-            onClicked: gameMenu.open()
+        onFullScreenToggleRequested: {
+            appWindow.visibility = appWindow.visibility === Window.FullScreen ? Window.Windowed
+                                                                             : Window.FullScreen
         }
     }
 

@@ -20,6 +20,10 @@ import QtQuick
 import QtQuick.Controls.Basic
 
 // Modal dialog in the paper style: a title, free content and a button row.
+//
+// The panel is laid out at the design size like the game and scaled with
+// Style.uiScale. The popup itself gets the scaled size, so Qt positions and
+// keeps it inside the window correctly.
 Popup {
     id: dialog
     property string title: ""
@@ -28,20 +32,17 @@ Popup {
 
     parent: Overlay.overlay
     anchors.centerIn: parent
-    width: Math.min(parent ? parent.width - 48 : 420, 420)
     modal: true
     dim: true
-    padding: 24
+    focus: true
+    padding: 0
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
     Overlay.modal: Rectangle {
         color: Style.dim
     }
 
-    background: Rectangle {
-        radius: Style.radiusLarge
-        color: Style.paper
-    }
+    background: null
 
     enter: Transition {
         NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; duration: 150 }
@@ -52,29 +53,47 @@ Popup {
         NumberAnimation { property: "opacity"; to: 0.0; duration: 100 }
     }
 
-    contentItem: Column {
-        spacing: 20
+    contentItem: Item {
+        implicitWidth: panel.width * Style.uiScale
+        implicitHeight: panel.height * Style.uiScale
 
-        Text {
-            width: parent.width
-            horizontalAlignment: Text.AlignHCenter
-            text: dialog.title
-            visible: text.length > 0
-            color: Style.ink
-            font.pointSize: 22
-            font.bold: true
-        }
+        Rectangle {
+            id: panel
+            width: Math.min(Style.designWidth - 48, 420)
+            height: column.implicitHeight + 2 * column.anchors.margins
+            scale: Style.uiScale
+            transformOrigin: Item.TopLeft
+            radius: Style.radiusLarge
+            color: Style.paper
 
-        Column {
-            id: body
-            width: parent.width
-            spacing: 12
-        }
+            Column {
+                id: column
+                anchors.fill: parent
+                anchors.margins: 24
+                spacing: 20
 
-        Row {
-            id: buttonRow
-            anchors.horizontalCenter: parent.horizontalCenter
-            spacing: 12
+                Text {
+                    width: parent.width
+                    horizontalAlignment: Text.AlignHCenter
+                    text: dialog.title
+                    visible: text.length > 0
+                    color: Style.ink
+                    font.pointSize: 22
+                    font.bold: true
+                }
+
+                Column {
+                    id: body
+                    width: parent.width
+                    spacing: 12
+                }
+
+                Row {
+                    id: buttonRow
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    spacing: 12
+                }
+            }
         }
     }
 }

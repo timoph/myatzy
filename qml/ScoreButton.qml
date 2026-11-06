@@ -103,6 +103,8 @@ Button {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             height: 1
+            // keeps the line evenly thin when the view is scaled
+            antialiasing: true
             color: Style.paperLine
         }
     }

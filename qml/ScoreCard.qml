@@ -107,6 +107,7 @@ Item {
         anchors.bottom: parent.bottom
         anchors.margins: 14
         width: 1
+        antialiasing: true
         color: Style.paperLine
     }
 
