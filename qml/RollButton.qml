@@ -27,7 +27,7 @@ Button {
     property int rollsLeft: 0
     property int maxRolls: 3
 
-    implicitWidth: 200
+    implicitWidth: Math.max(200, implicitContentWidth + 64)
     implicitHeight: 64
     text: qsTr("Roll")
     font.pointSize: 20
@@ -49,6 +49,7 @@ Button {
         Row {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 6
+            visible: button.maxRolls > 0
 
             Repeater {
                 model: button.maxRolls

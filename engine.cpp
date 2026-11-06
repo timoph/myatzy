@@ -47,6 +47,11 @@ void Engine::newGame()
     emit diceChanged();
     emit scoresChanged();
     emit turnChanged();
+
+    if(m_highScoreRank != -1) {
+        m_highScoreRank = -1;
+        emit highScoresChanged();
+    }
 }
 
 void Engine::roll()
@@ -122,6 +127,14 @@ bool Engine::canRoll() const
     // rerolling with every die held would just waste a roll
     const bool allHeld = std::all_of(m_held.begin(), m_held.end(), [](bool h) { return h; });
     return !allHeld;
+}
+
+bool Engine::gameInProgress() const
+{
+    if(gameOver())
+        return false;
+    return m_rollCount > 0 || std::any_of(m_scores.begin(), m_scores.end(),
+                                          [](const std::optional<int> &s) { return s.has_value(); });
 }
 
 bool Engine::canHold() const
@@ -230,8 +243,13 @@ void Engine::updateHighScores()
     int place = 0;
     while(place < m_highScores.size() && score <= m_highScores.at(place))
         place++;
-    if(place >= HighScoreCount)
+    if(place >= HighScoreCount) {
+        if(m_highScoreRank != -1) {
+            m_highScoreRank = -1;
+            emit highScoresChanged();
+        }
         return;
+    }
 
     m_highScores.insert(place, score);
     while(m_highScores.size() > HighScoreCount)
@@ -241,11 +259,6 @@ void Engine::updateHighScores()
     for(int i = 0; i < HighScoreCount; i++)
         settings.setValue(QString("high/%1").arg(i + 1), m_highScores.at(i));
 
+    m_highScoreRank = place;
     emit highScoresChanged();
-
-    switch(place) {
-    case 0: emit displayMessage(tr("New high score")); break;
-    case 1: emit displayMessage(tr("New 2nd best score")); break;
-    default: emit displayMessage(tr("New 3rd best score")); break;
-    }
 }

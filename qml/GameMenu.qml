@@ -18,66 +18,89 @@
 
 import QtQuick
 
-Item {
-    id: rootItem
-    implicitHeight: parent.height - (parent.height / 5)
-    implicitWidth: parent.width - (parent.width / 5)
+// Rules, high scores and starting a new game.
+PaperDialog {
+    id: menu
+    title: qsTr("Myatzy")
 
-    Rectangle {
-        id: menuRect
-        anchors.fill: parent
-        radius: Style.radiusLarge
-        color: Style.paper
-
-        Text {
-            id: titleText
-            anchors.top: parent.top
-            anchors.topMargin: 16
-            anchors.horizontalCenter: parent.horizontalCenter
-            color: Style.ink
-            font.pointSize: 22
-            font.bold: true
-            text: qsTr("Myatzy")
+    // Starts a new game, asking first if that would throw one away.
+    function requestNewGame() {
+        if (Engine.gameInProgress) {
+            confirmDialog.open()
+        } else {
+            Engine.newGame()
+            menu.close()
         }
+    }
+
+    Text {
+        width: parent.width
+        wrapMode: Text.WordWrap
+        color: Style.ink
+        font.pointSize: 10
+        lineHeight: 1.15
+        textFormat: Text.StyledText
+        text: qsTr("Collect the best hand for each row of the score card. You have three rolls per turn " +
+                   "and can hold any dice between them. You can score a hand after any roll.<br><br>" +
+                   "<b>Ones to Sixes</b> count the dice showing that number. 63 or more in total gives a " +
+                   "bonus of 50 points.<br>" +
+                   "<b>Small straight</b> is 1-5 (15 points), <b>big straight</b> 2-6 (20 points), " +
+                   "<b>full house</b> three and two of a kind.<br>" +
+                   "<b>Chance</b> is the sum of all dice and <b>Yatzy</b>, five of a kind, gives 50 points.")
+    }
+
+    Text {
+        text: qsTr("High scores")
+        color: Style.ink
+        font.pointSize: 14
+        font.bold: true
+    }
+
+    HighScoreList {
+        width: parent.width
+    }
+
+    buttons: [
+        MenuButton {
+            text: qsTr("Close")
+            secondary: true
+            onClicked: menu.close()
+        },
+        MenuButton {
+            objectName: "newGameButton"
+            text: qsTr("New game")
+            onClicked: menu.requestNewGame()
+        }
+    ]
+
+    PaperDialog {
+        id: confirmDialog
+        title: qsTr("New game?")
 
         Text {
-            id: yadaYadaText
-            anchors.top: titleText.bottom
-            anchors.topMargin: 12
-            width: parent.width - 40
-            anchors.horizontalCenter: parent.horizontalCenter
-            color: Style.ink
+            width: parent.width
+            horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
-            text: qsTr("The game's objective is to get different hands by throwing the dices three times.\n" +
-                                  "For ones, twos, threes, etc. the goal is to get as many of the named numbers as possible.\n\n" +
-                                  " You'll get a 50 point bonus if the cumulative score of those is 63 or above.\n\n " +
-                                  "You get a yatzy by having any number five times. Yatzy gives you 50 points. \n\n" +
-                                  "Small straight is 1-5, big is 2-6, full house is three and two of a kind.\n\n " +
-                                  "Chance counts all the dice scores together.\n\n" +
-                                  "For more information about yatzy, see\nhttp://en.wikipedia.org/wiki/Yatzy"
-                                  )
+            text: qsTr("The current game will be lost.")
+            color: Style.ink
+            font.pointSize: 12
         }
 
-        Row {
-            id: contentColumn
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 20
-            anchors.horizontalCenter: parent.horizontalCenter
-
+        buttons: [
             MenuButton {
-                id: ngButton
+                text: qsTr("Cancel")
+                secondary: true
+                onClicked: confirmDialog.close()
+            },
+            MenuButton {
+                objectName: "confirmNewGameButton"
                 text: qsTr("New game")
                 onClicked: {
                     Engine.newGame()
-                    rootItem.visible = false
+                    confirmDialog.close()
+                    menu.close()
                 }
             }
-
-//            Button {
-//                id: hsButton
-//                text: "Highscores"
-//                onClicked: messageRect.showMessage(qsTr("Top 3 scores"), Engine.highScores)
-//            }
-        }
+        ]
     }
 }

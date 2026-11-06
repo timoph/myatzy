@@ -19,6 +19,9 @@ set(QML_FILES
     qml/Main.qml
     qml/GameView.qml
     qml/GameMenu.qml
+    qml/GameOverDialog.qml
+    qml/HighScoreList.qml
+    qml/PaperDialog.qml
     qml/MenuButton.qml
     qml/MenuIconButton.qml
     qml/RollButton.qml

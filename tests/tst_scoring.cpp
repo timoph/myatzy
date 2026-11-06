@@ -51,6 +51,7 @@ private slots:
     void allHeldCannotRoll();
     void rolledSignal();
     void scoreAfterFirstRoll();
+    void gameInProgress();
     void cannotScoreTwiceOrBeforeRolling();
     void cannotScoreInvalidCategory();
     void upperBonusAndTotal();
@@ -192,6 +193,8 @@ void TestScoring::initialState()
     QVERIFY(!engine.gameOver());
     QCOMPARE(engine.total(), 0);
     QCOMPARE(engine.highScores(), QList<int>({0, 0, 0}));
+    QCOMPARE(engine.highScoreRank(), -1);
+    QVERIFY(!engine.gameInProgress());
 }
 
 void TestScoring::rollsPerTurn()
@@ -316,6 +319,23 @@ void TestScoring::scoreAfterFirstRoll()
     QVERIFY(engine.canRoll());
 }
 
+void TestScoring::gameInProgress()
+{
+    Engine engine;
+    QVERIFY(!engine.gameInProgress());
+    engine.roll();
+    QVERIFY(engine.gameInProgress());
+    QVERIFY(engine.scoreCategory(int(Category::Chance)));
+    QVERIFY(engine.gameInProgress()); // rollCount is 0 again, but a hand is played
+
+    engine.newGame();
+    QVERIFY(!engine.gameInProgress());
+
+    playAll(engine, {2, 2, 2, 2, 2});
+    QVERIFY(engine.gameOver());
+    QVERIFY(!engine.gameInProgress());
+}
+
 void TestScoring::cannotScoreTwiceOrBeforeRolling()
 {
     Engine engine;
@@ -354,7 +374,6 @@ void TestScoring::upperBonusAndTotal()
 void TestScoring::fullGame()
 {
     Engine engine;
-    QSignalSpy messages(&engine, &Engine::displayMessage);
     QSignalSpy highScores(&engine, &Engine::highScoresChanged);
 
     playAll(engine, {6, 6, 6, 6, 6});
@@ -367,9 +386,9 @@ void TestScoring::fullGame()
     const int expected = 30 + 12 + 18 + 24 + 30 + 50;
     QCOMPARE(engine.total(), expected);
     QCOMPARE(engine.upperBonus(), 0);
-    QCOMPARE(messages.count(), 1);
     QCOMPARE(highScores.count(), 1);
     QCOMPARE(engine.highScores(), QList<int>({expected, 0, 0}));
+    QCOMPARE(engine.highScoreRank(), 0);
 
     // persisted in the old settings format
     QCOMPARE(QSettings().value("high/1").toInt(), expected);
@@ -382,8 +401,10 @@ void TestScoring::newGameResets()
     playAll(engine, {6, 6, 6, 6, 6});
     QVERIFY(engine.gameOver());
 
+    QCOMPARE(engine.highScoreRank(), 0);
     engine.newGame();
     QVERIFY(!engine.gameOver());
+    QCOMPARE(engine.highScoreRank(), -1);
     QCOMPARE(engine.total(), 0);
     QCOMPARE(engine.upperBonus(), 0);
     QCOMPARE(engine.rollCount(), 0);
@@ -395,11 +416,12 @@ void TestScoring::newGameResets()
 void TestScoring::highScoreOrder()
 {
     Engine engine;
-    QSignalSpy messages(&engine, &Engine::displayMessage);
+    QList<int> ranks;
 
     const auto game = [&](int face) {
         engine.newGame();
         playAll(engine, {face, face, face, face, face});
+        ranks << engine.highScoreRank();
         return engine.total();
     };
 
@@ -412,10 +434,11 @@ void TestScoring::highScoreOrder()
     game(1);
     QCOMPARE(engine.highScores(), QList<int>({sixes, threes, ones}));
 
-    QCOMPARE(messages.count(), 3);
-    QCOMPARE(messages.at(0).at(0).toString(), QString("New high score"));
-    QCOMPARE(messages.at(1).at(0).toString(), QString("New high score"));
-    QCOMPARE(messages.at(2).at(0).toString(), QString("New 3rd best score"));
+    // between: fours beat threes and push ones out
+    const int fours = game(4);
+    QCOMPARE(engine.highScores(), QList<int>({sixes, fours, threes}));
+
+    QCOMPARE(ranks, QList<int>({0, 0, 2, -1, 1}));
 }
 
 void TestScoring::scoreModel()

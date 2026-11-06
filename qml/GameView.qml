@@ -63,10 +63,12 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 20
         anchors.horizontalCenter: parent.horizontalCenter
+        // after the game the same button starts a new one
+        text: Engine.gameOver ? qsTr("New game") : qsTr("Roll")
         rollsLeft: Engine.maxRolls - Engine.rollCount
-        maxRolls: Engine.maxRolls
-        enabled: Engine.canRoll && !diceRect.rolling
+        maxRolls: Engine.gameOver ? 0 : Engine.maxRolls
+        enabled: Engine.gameOver || (Engine.canRoll && !diceRect.rolling)
 
-        onClicked: Engine.roll()
+        onClicked: Engine.gameOver ? Engine.newGame() : Engine.roll()
     }
 }

@@ -30,16 +30,16 @@ Window {
 
     title: "Myatzy"
 
+    readonly property bool gameOver: Engine.gameOver
+    onGameOverChanged: {
+        if (gameOver)
+            gameOverDialog.open()
+    }
+
     GameView {
         id: mainPage
         width: appWindow.width
         height: appWindow.height
-
-        MouseArea {
-            anchors.fill: parent
-            enabled: gameMenu.visible
-            onClicked: gameMenu.visible = false
-        }
 
         MenuIconButton {
             id: menuButton
@@ -47,53 +47,15 @@ Window {
             anchors.bottom: parent.bottom
             anchors.right: parent.right
             anchors.margins: 16
-            visible: !gameMenu.visible
-            onClicked: gameMenu.visible = true
+            onClicked: gameMenu.open()
         }
-    }
-
-    Rectangle {
-        id: dimmer
-        anchors.fill: parent
-        color: Style.dim
-        visible: popupRect.visible || gameMenu.visible
     }
 
     GameMenu {
         id: gameMenu
-        visible: false
-        anchors.centerIn: parent
     }
 
-    Rectangle {
-        id: popupRect
-        width: appWindow.width - 80
-        height: 120
-        anchors.centerIn: parent
-        radius: Style.radiusLarge
-        color: Style.paper
-        visible: false
-
-        Text {
-            id: popupText
-            anchors.centerIn: parent
-            color: Style.ink
-            font.pointSize: 18
-            font.bold: true
-        }
-
-        Connections {
-            target: Engine
-            function onDisplayMessage(msg) {
-                popupText.text = msg
-                popupRect.visible = true
-            }
-        }
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        enabled: popupRect.visible
-        onClicked: popupRect.visible = false
+    GameOverDialog {
+        id: gameOverDialog
     }
 }

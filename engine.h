@@ -50,11 +50,13 @@ class Engine : public QObject
     Q_PROPERTY(bool canHold READ canHold NOTIFY turnChanged)
     Q_PROPERTY(bool canScore READ canScore NOTIFY turnChanged)
     Q_PROPERTY(bool gameOver READ gameOver NOTIFY turnChanged)
+    Q_PROPERTY(bool gameInProgress READ gameInProgress NOTIFY turnChanged)
     Q_PROPERTY(QString statusText READ statusText NOTIFY turnChanged)
     Q_PROPERTY(int upperSum READ upperSum NOTIFY scoresChanged)
     Q_PROPERTY(int upperBonus READ upperBonus NOTIFY scoresChanged)
     Q_PROPERTY(int total READ total NOTIFY scoresChanged)
     Q_PROPERTY(QList<int> highScores READ highScores NOTIFY highScoresChanged)
+    Q_PROPERTY(int highScoreRank READ highScoreRank NOTIFY highScoresChanged)
     Q_PROPERTY(QAbstractItemModel *upperSection READ upperSection CONSTANT)
     Q_PROPERTY(QAbstractItemModel *lowerSection READ lowerSection CONSTANT)
 
@@ -80,11 +82,15 @@ public:
     bool canHold() const;
     bool canScore() const;
     bool gameOver() const;
+    // Started (rolled or scored) and not finished yet.
+    bool gameInProgress() const;
     QString statusText() const;
     int upperSum() const;
     int upperBonus() const;
     int total() const;
     QList<int> highScores() const { return m_highScores; }
+    // Index in highScores reached by the last finished game, -1 if none.
+    int highScoreRank() const { return m_highScoreRank; }
     QAbstractItemModel *upperSection() const;
     QAbstractItemModel *lowerSection() const;
 
@@ -102,7 +108,6 @@ signals:
     void turnChanged();
     void scoresChanged();
     void highScoresChanged();
-    void displayMessage(const QString &msg);
     // Emitted after a roll; rerolled[i] tells whether die i was thrown.
     void rolled(const QList<bool> &rerolled);
 
@@ -116,6 +121,7 @@ private:
     std::array<std::optional<int>, Scoring::CategoryCount> m_scores;
     int m_rollCount = 0;
     QList<int> m_highScores;
+    int m_highScoreRank = -1;
     ScoreModel *m_upperSection;
     ScoreModel *m_lowerSection;
 };
