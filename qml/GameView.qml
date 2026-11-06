@@ -21,14 +21,18 @@ import QtQuick
 Rectangle {
     id: mainPage
     anchors.fill: parent
-    color: Style.pageBgColor
+
+    gradient: Gradient {
+        GradientStop { position: 0.0; color: Style.feltTop }
+        GradientStop { position: 1.0; color: Style.feltBottom }
+    }
 
     Column {
         id: contentColumn
         width: parent.width
         anchors.top: parent.top
         anchors.topMargin: 20
-        spacing: 15
+        spacing: 16
 
         ScoreCard {
             id: scoreCard
@@ -42,23 +46,24 @@ Rectangle {
 
         Text {
             id: statusLabel
-            text: Engine.statusText
-            color: Style.pageTextColor
+            width: parent.width - 40
             anchors.horizontalCenter: parent.horizontalCenter
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WordWrap
+            text: Engine.statusText
+            color: Style.textOnFelt
+            font.pointSize: 11
         }
     }
 
-    MenuButton {
+    RollButton {
         id: rollButton
         objectName: "rollButton"
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 5
+        anchors.bottomMargin: 20
         anchors.horizontalCenter: parent.horizontalCenter
-        text: "\u27f3"
-        fontSize: 90
-        width: 90
-        height: width
-        transparentBackground: true
+        rollsLeft: Engine.maxRolls - Engine.rollCount
+        maxRolls: Engine.maxRolls
         enabled: Engine.canRoll
 
         onClicked: Engine.roll()

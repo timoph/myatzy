@@ -19,46 +19,31 @@
 import QtQuick
 import QtQuick.Controls.Basic
 
-Item {
-    id: base
-    implicitHeight: 80
-    implicitWidth: 160
+// Rounded text button. Primary buttons use the accent color.
+Button {
+    id: button
+    property bool secondary: false
 
-    property string text: ""
-    property bool drawBorders: true
-    property bool transparentBackground: false
-    property int fontSize: 20
+    implicitWidth: Math.max(140, implicitContentWidth + leftPadding + rightPadding)
+    implicitHeight: 48
+    leftPadding: 24
+    rightPadding: 24
+    font.pointSize: 14
+    font.bold: true
 
-    signal clicked()
+    contentItem: Text {
+        text: button.text
+        font: button.font
+        color: Style.textOnAccent
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
+        elide: Text.ElideRight
+    }
 
-    Button {
-        id: button
-        height: base.height
-        text: base.text
-        anchors.fill: parent
-        font.pointSize: base.fontSize
-
-        contentItem: Text {
-            text: button.text
-            font: button.font
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.horizontalCenter: parent.horizontalCenter
-            opacity: enabled ? 1.0 : 0.3
-            color: button.down ? Style.highlightColor : Style.buttonTextColor
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            elide: Text.ElideRight
-        }
-
-        background: Rectangle {
-            implicitWidth: 60
-            implicitHeight: 60
-            border.color: Style.buttonBorderColor
-            border.width: base.drawBorders ? 2 : 0
-            color: Style.buttonColor
-            opacity: base.transparentBackground ? 0.0 : 1.0
-        }
-
-        onClicked: base.clicked()
+    background: Rectangle {
+        radius: height / 2
+        color: button.secondary ? (button.down ? Style.secondaryPressed : Style.secondary)
+                                : (button.down ? Style.accentPressed : Style.accent)
+        opacity: button.enabled ? 1.0 : 0.4
     }
 }

@@ -35,7 +35,9 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: diceRoot.held ? Style.diceSelectedColor : Style.diceDefaultColor
+        color: diceRoot.held ? Style.dieHeld : Style.die
+        border.width: 1
+        border.color: Style.dieEdge
         radius: 15
         Grid {
             anchors.centerIn: parent

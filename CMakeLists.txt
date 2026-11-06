@@ -20,6 +20,8 @@ set(QML_FILES
     qml/GameView.qml
     qml/GameMenu.qml
     qml/MenuButton.qml
+    qml/MenuIconButton.qml
+    qml/RollButton.qml
     qml/ScoreCard.qml
     qml/ScoreButton.qml
     qml/DiceRect.qml

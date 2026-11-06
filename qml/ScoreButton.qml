@@ -55,8 +55,7 @@ Button {
             font.pointSize: button.font.pointSize
             font.bold: button.font.bold
             font.strikeout: button.played && button.strikeoutWhenPlayed
-            color: button.played && button.strikeoutWhenPlayed ? Style.scorePlayedNameColor
-                                                               : Style.scoreButtonTextColor
+            color: button.played && button.strikeoutWhenPlayed ? Style.inkMuted : Style.ink
             elide: Text.ElideRight
         }
 
@@ -67,7 +66,7 @@ Button {
             anchors.baseline: nameText.baseline
             text: button.detail
             font.pointSize: button.font.pointSize * 0.7
-            color: Style.scorePreviewZeroColor
+            color: Style.inkMuted
         }
 
         Text {
@@ -79,15 +78,26 @@ Button {
             text: button.valueText
             font.pointSize: button.font.pointSize
             font.bold: button.font.bold || button.played
-            color: !button.showsPreview ? Style.scoreButtonTextColor
-                 : button.potential > 0 ? Style.scorePreviewColor
-                 : Style.scorePreviewZeroColor
+            color: !button.showsPreview ? Style.ink
+                 : button.potential > 0 ? Style.inkPreview
+                 : Style.inkPreviewZero
         }
     }
 
+    // draw the ruled line under the row
+    property bool ruled: true
+
     background: Rectangle {
         radius: 6
-        color: button.enabled && (button.down || button.hovered) ? Style.scoreRowHoverColor
-                                                                 : Style.scoreButtonColor
+        color: button.enabled && (button.down || button.hovered) ? Style.paperHover : "transparent"
+
+        Rectangle {
+            visible: button.ruled
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            height: 1
+            color: Style.paperLine
+        }
     }
 }

@@ -20,25 +20,40 @@ pragma Singleton
 
 import QtQuick
 
+// Colors and shared metrics. A green card table with a paper score sheet.
 QtObject {
-    readonly property string menuBgColor: "#000000"
-    readonly property string pageBgColor: "#000000"
-    readonly property string pageTextColor: "#ffffff"
-    readonly property string highlightColor: "#800080"
-    readonly property string diceSelectedColor: "#989898"
-    readonly property string diceDefaultColor: "#dedede"
-    readonly property string dotColor: "#000000"
-    readonly property string emptyDotColor: "#00000000"
-    readonly property string msgTextColor: "#000000"
-    readonly property string scoreButtonColor: "#111"
-    readonly property string scoreCardColor: "#111"
-    readonly property string scoreCardTextColor: "#ffffff"
-    readonly property string scoreButtonTextColor: "#fff"
-    readonly property string scorePlayedNameColor: "#888888"
-    readonly property string scorePreviewColor: "#c77dff"
-    readonly property string scorePreviewZeroColor: "#666666"
-    readonly property string scoreRowHoverColor: "#2a1a33"
-    readonly property string buttonTextColor: "#ffffff"
-    readonly property string buttonColor: "#555555"
-    readonly property string buttonBorderColor: "#000"
+    // the table
+    readonly property color feltTop: "#1f6e52"
+    readonly property color feltBottom: "#0c3326"
+    readonly property color textOnFelt: "#f3ead3"
+    readonly property color textOnFeltMuted: "#a7c2b4"
+    readonly property color shadow: "#59000000"
+
+    // buttons and highlights
+    readonly property color accent: "#f2b84b"
+    readonly property color accentPressed: "#d99a2b"
+    readonly property color textOnAccent: "#3a2a07"
+    readonly property color secondary: "#e8dfc8"
+    readonly property color secondaryPressed: "#d6caab"
+
+    // the score sheet
+    readonly property color paper: "#f7f2e5"
+    readonly property color paperLine: "#e4dac2"
+    readonly property color paperHover: "#ede2c6"
+    readonly property color ink: "#2b2721"
+    readonly property color inkMuted: "#a39a86"
+    readonly property color inkPreview: "#2f6db3"
+    readonly property color inkPreviewZero: "#c3b9a3"
+
+    // dice
+    readonly property color die: "#fffdf8"
+    readonly property color dieEdge: "#d9d2c0"
+    readonly property color dieHeld: "#ffe7a8"
+    readonly property color pip: "#24211c"
+
+    // dialogs
+    readonly property color dim: "#99000000"
+
+    readonly property int radiusLarge: 16
+    readonly property int radiusSmall: 8
 }

@@ -20,6 +20,7 @@ import QtQuick
 
 Window {
     id: appWindow
+    color: Style.feltBottom
     flags: Qt.Window
     minimumHeight: 650
     minimumWidth: 500
@@ -40,27 +41,21 @@ Window {
             onClicked: gameMenu.visible = false
         }
 
-        MenuButton {
+        MenuIconButton {
             id: menuButton
             objectName: "menuButton"
             anchors.bottom: parent.bottom
             anchors.right: parent.right
-            drawBorders: false
-            transparentBackground: true
-            fontSize: 40
+            anchors.margins: 16
             visible: !gameMenu.visible
             onClicked: gameMenu.visible = true
-            width: 50
-            height: width
-            text: "\u2699"
         }
     }
 
     Rectangle {
         id: dimmer
         anchors.fill: parent
-        color: Style.pageBgColor
-        opacity: 0.9
+        color: Style.dim
         visible: popupRect.visible || gameMenu.visible
     }
 
@@ -72,16 +67,19 @@ Window {
 
     Rectangle {
         id: popupRect
-        width: appWindow.width
+        width: appWindow.width - 80
+        height: 120
         anchors.centerIn: parent
-        border.width: 2
-        border.color: Style.highlightColor
+        radius: Style.radiusLarge
+        color: Style.paper
         visible: false
-        height: 150
 
         Text {
             id: popupText
             anchors.centerIn: parent
+            color: Style.ink
+            font.pointSize: 18
+            font.bold: true
         }
 
         Connections {

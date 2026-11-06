@@ -18,14 +18,35 @@
 
 import QtQuick
 
-Rectangle {
+Item {
     id: baseRect
     implicitWidth: 460
     implicitHeight: sections.implicitHeight + 2 * sections.anchors.margins
-    border.width: 2
-    border.color: Style.highlightColor
-    color: Style.scoreCardColor
-    radius: 15
+
+    // drop shadow
+    Rectangle {
+        anchors.fill: parent
+        anchors.topMargin: 4
+        anchors.bottomMargin: -4
+        radius: Style.radiusLarge
+        color: Style.shadow
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        radius: Style.radiusLarge
+        color: Style.paper
+    }
+
+    // divider between the upper and lower section
+    Rectangle {
+        x: sections.x + sections.columnWidth + sections.spacing / 2
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.margins: 14
+        width: 1
+        color: Style.paperLine
+    }
 
     Component {
         id: scoreDelegate
@@ -50,7 +71,7 @@ Rectangle {
         id: sections
         anchors.fill: parent
         anchors.margins: 10
-        spacing: 4
+        spacing: 16
 
         readonly property real columnWidth: (width - spacing) / 2
 
@@ -70,6 +91,7 @@ Rectangle {
                 played: true
                 strikeoutWhenPlayed: false
                 enabled: false
+                ruled: false
             }
 
             // keeps the total level with the last row of the lower section
@@ -85,6 +107,7 @@ Rectangle {
                 played: true
                 strikeoutWhenPlayed: false
                 enabled: false
+                ruled: false
                 font.bold: true
             }
         }

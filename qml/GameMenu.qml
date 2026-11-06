@@ -26,26 +26,27 @@ Item {
     Rectangle {
         id: menuRect
         anchors.fill: parent
-        color: Style.menuBgColor
-        border.width: 4
-        border.color: Style.highlightColor
+        radius: Style.radiusLarge
+        color: Style.paper
 
         Text {
             id: titleText
             anchors.top: parent.top
+            anchors.topMargin: 16
             anchors.horizontalCenter: parent.horizontalCenter
-            color: Style.pageTextColor
-            font.pointSize: 20
+            color: Style.ink
+            font.pointSize: 22
+            font.bold: true
             text: qsTr("Myatzy")
         }
 
         Text {
             id: yadaYadaText
             anchors.top: titleText.bottom
-            anchors.topMargin: 5
-            width: parent.width - 20
+            anchors.topMargin: 12
+            width: parent.width - 40
             anchors.horizontalCenter: parent.horizontalCenter
-            color: Style.pageTextColor
+            color: Style.ink
             wrapMode: Text.WordWrap
             text: qsTr("The game's objective is to get different hands by throwing the dices three times.\n" +
                                   "For ones, twos, threes, etc. the goal is to get as many of the named numbers as possible.\n\n" +
@@ -60,12 +61,12 @@ Item {
         Row {
             id: contentColumn
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: 10
+            anchors.bottomMargin: 20
             anchors.horizontalCenter: parent.horizontalCenter
 
             MenuButton {
                 id: ngButton
-                text: "new game"
+                text: qsTr("New game")
                 onClicked: {
                     Engine.newGame()
                     rootItem.visible = false
